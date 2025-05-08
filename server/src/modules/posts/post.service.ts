@@ -17,6 +17,7 @@ import {
 } from 'src/shared/utils/functions';
 import {} from 'src/shared/utils/constants';
 import { cloudinaryDto } from './dto/cloudinary.dto';
+import { contains } from 'class-validator';
 
 @Injectable()
 export class PostService {
@@ -42,7 +43,7 @@ export class PostService {
   }
 
   async createPost(
-    userId: number,
+    userId: string,
     body: CreatePostDto,
     image: Express.Multer.File,
   ) {
@@ -53,44 +54,97 @@ export class PostService {
       throw new BadRequestException('Title is required');
     }
 
-    try {
-      const result = await this.uploadToCloudinary(image);
+    const tagNames = body.tags ? createTagArray(body.tags) : [];
+    console.log(tagNames);
+    if (tagNames.length > 15) {
+      throw new BadRequestException('Maximum 15 tags allowed');
+    }
+    return this.prisma.$transaction(async (prisma) => {
+      try {
+        const result = await this.uploadToCloudinary(image);
 
-      const tagNames = body.tags ? createTagArray(body.tags) : [];
-      console.log(tagNames);
-      if (tagNames.length > 15) {
-        throw new BadRequestException('Maximum 15 tags allowed');
-      }
-
-      await this.prisma.pin.create({
-        data: {
-          title: body.title,
-          description: body.description || null,
-          image_url: result.secure_url,
-          user_id: userId,
-          tags: {
-            connectOrCreate: tagNames.map((tagName) => {
-              return {
-                where: { name: tagName },
-                create: {
-                  name: tagName,
-                  slug: createSlug(tagName),
-                  created_by: {
-                    connect: { id: userId },
+        await prisma.pin.create({
+          data: {
+            title: body.title,
+            description: body.description || null,
+            image_url: result.secure_url,
+            user_id: userId,
+            pin_tags: {
+              create: tagNames.map((tagName) => ({
+                tag: {
+                  connectOrCreate: {
+                    where: { name: tagName },
+                    create: {
+                      name: tagName,
+                      slug: createSlug(tagName),
+                      created_by: {
+                        connect: { id: userId },
+                      },
+                    },
                   },
                 },
-              };
-            }),
+              })),
+            },
+          },
+          include: {
+            pin_tags: {
+              include: {
+                tag: {
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                  },
+                },
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profile_img: true,
+              },
+            },
+          },
+        });
+
+        return {
+          statusCode: HttpStatus.CREATED,
+          message: 'Pin created successfully',
+        };
+      } catch (error) {
+        throw new HttpException(
+          `Failed to create pin: ${error.message}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    });
+  }
+
+  async getAllPosts(userId: string) {
+    try {
+      // 1. Get user's preferred tags
+      const userWithTags = await this.prisma.user_tags.findMany({
+        where: {
+          user_id: userId,
+        },
+        select: {
+          tag_id: true,
+        },
+      });
+      console.log(userWithTags);
+      const tagIds = userWithTags.map((ut) => ut.tag_id);
+      console.log(tagIds);
+
+      const preferredPosts = await this.prisma.pin.findMany({
+        where: {
+          pin_tags: {
+            some: {
+              tag_id: { in: tagIds },
+            },
           },
         },
         include: {
-          tags: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
           user: {
             select: {
               id: true,
@@ -98,49 +152,60 @@ export class PostService {
               profile_img: true,
             },
           },
+          pin_tags: {
+            select: {
+              tag: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const remainingPosts = await this.prisma.pin.findMany({
+        where: {
+          NOT: {
+            pin_tags: {
+              some: {
+                tag_id: { in: tagIds },
+              },
+            },
+          },
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              profile_img: true,
+            },
+          },
+          pin_tags: {
+            select: {
+              tag: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          created_at: 'desc',
         },
       });
 
       return {
-        statusCode: HttpStatus.CREATED,
-        message: 'Pin created successfully',
+        message: 'Posts fetched successfully',
+        preferredPosts,
+        remainingPosts,
       };
     } catch (error) {
-      throw new HttpException(
-        'Failed to create pin',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async getAllPosts() {
-    try {
-      const pins = await this.prisma.pin.findMany({
-        where: { deleted_at: null },
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          image_url: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              profile_img: true,
-            },
-          },
-          tags: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-        },
-      });
-      return pins;
-    } catch (error) {
-      console.error('Error creating pin:', error);
+      console.error('Error fetching pins', error);
       throw new HttpException(
         'Failed to fetch pins',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -148,12 +213,12 @@ export class PostService {
     }
   }
 
-  async getPostById(pinId: number) {
+  async getPostById(postId: string) {
     try {
       const pin = await this.prisma.pin.findUnique({
         where: {
-          id: pinId,
-          deleted_at: null,
+          id: postId,
+          is_deleted: false,
         },
         include: {
           user: {
@@ -163,20 +228,25 @@ export class PostService {
               profile_img: true,
             },
           },
-          tags: {
-            select: {
-              name: true,
-              slug: true,
+          pin_tags: {
+            include: {
+              tag: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
             },
           },
         },
       });
 
       if (!pin) {
-        throw new NotFoundException('Pin not found');
+        throw new HttpException('Pin not found', HttpStatus.NOT_FOUND);
       }
 
-      const tagNames = pin.tags.map((tag) => tag.name);
+      const tagNames = pin.pin_tags.map((pinTag) => pinTag.tag.name);
       const recommendations = await this.recommendPostsByTags(tagNames, pin.id);
 
       return {
@@ -185,10 +255,10 @@ export class PostService {
         data: {
           currentPin: {
             ...pin,
-            tags: pin.tags.map((tag) => ({
+            tags: pin.pin_tags.map((pinTag) => ({
               // id: tag.id,
-              name: tag.name,
-              slug: tag.slug,
+              name: pinTag.tag.name,
+              slug: pinTag.tag.slug,
             })),
           },
           recommendedPins: recommendations,
@@ -198,32 +268,28 @@ export class PostService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      console.error(`Error fetching pin ${pinId}:`, error);
-      throw new HttpException(
-        error.message || 'Failed to fetch pin',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Failed to fetch pin', HttpStatus.BAD_REQUEST);
     }
   }
   async editPostById({
     userId,
-    pinId,
+    postId,
     updateData,
   }: {
-    userId: number;
-    pinId: number;
+    userId: string;
+    postId: string;
     updateData: UpdatePostDto;
   }) {
     try {
-      const pin = await this.prisma.pin.findUnique({
-        where: { id: pinId },
+      const post = await this.prisma.pin.findUnique({
+        where: { id: postId },
       });
 
-      if (!pin) {
-        throw new NotFoundException('Pin not found');
+      if (!post) {
+        throw new HttpException('Pin not found', HttpStatus.NOT_FOUND);
       }
 
-      if (pin.user_id !== userId) {
+      if (post.user_id !== userId) {
         throw new HttpException(
           'You are not authorized to edit this pin',
           HttpStatus.FORBIDDEN,
@@ -231,7 +297,10 @@ export class PostService {
       }
 
       if (!updateData.title && !updateData.description && !updateData.tags) {
-        throw new BadRequestException('At least one field must be updated');
+        throw new HttpException(
+          'At least one field must be updated',
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       const tagNames = updateData.tags
@@ -239,7 +308,7 @@ export class PostService {
         : undefined;
 
       await this.prisma.pin.update({
-        where: { id: pinId },
+        where: { id: postId },
         data: {
           title: updateData.title,
           description: updateData.description,
@@ -252,7 +321,9 @@ export class PostService {
                 create: {
                   name: tagName,
                   slug: createSlug(tagName),
-                  created_by: { connect: { id: userId } },
+                  created_by: {
+                    connect: { id: userId },
+                  },
                 },
               })),
             },
@@ -278,15 +349,13 @@ export class PostService {
     }
   }
 
-  async deletePostById({ pinId, userId }: { pinId: number; userId: number }) {
+  async deletePostById({ postId, userId }: { postId: string; userId: string }) {
     try {
       const pin = await this.prisma.pin.findUnique({
-        where: { id: pinId },
+        where: { id: postId },
       });
 
-      if (!pin) {
-        throw new NotFoundException('Pin not found');
-      }
+      if (!pin) throw new NotFoundException('Pin not found');
 
       if (pin.user_id !== userId) {
         throw new HttpException(
@@ -296,10 +365,8 @@ export class PostService {
       }
 
       await this.prisma.pin.update({
-        where: { id: pinId },
-        data: {
-          deleted_at: new Date(),
-        },
+        where: { id: postId },
+        data: { is_deleted: true },
       });
 
       return {
@@ -307,12 +374,9 @@ export class PostService {
         message: 'Pin deleted successfully',
       };
     } catch (error) {
-      if (
-        error instanceof HttpException ||
-        error instanceof NotFoundException
-      ) {
+      if (error instanceof HttpException || error instanceof NotFoundException)
         throw error;
-      }
+
       throw new HttpException(
         'Failed to delete pin',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -320,18 +384,22 @@ export class PostService {
     }
   }
 
-  async restorePostById({ pinId, userId }: { pinId: number; userId: number }) {
+  async restorePostById({
+    postId,
+    userId,
+  }: {
+    postId: string;
+    userId: string;
+  }) {
     try {
       const pin = await this.prisma.pin.findFirst({
         where: {
-          id: pinId,
-          deleted_at: { not: null },
+          id: postId,
+          is_deleted: true,
         },
       });
 
-      if (!pin) {
-        throw new NotFoundException('Deleted pin not found');
-      }
+      if (!pin) throw new NotFoundException('Deleted pin not found');
 
       if (pin.user_id !== userId) {
         throw new HttpException(
@@ -341,10 +409,8 @@ export class PostService {
       }
 
       await this.prisma.pin.update({
-        where: { id: pinId },
-        data: {
-          deleted_at: null,
-        },
+        where: { id: postId },
+        data: { is_deleted: false },
       });
 
       return {
@@ -352,12 +418,9 @@ export class PostService {
         message: 'Pin restored successfully',
       };
     } catch (error) {
-      if (
-        error instanceof HttpException ||
-        error instanceof NotFoundException
-      ) {
+      if (error instanceof HttpException || error instanceof NotFoundException)
         throw error;
-      }
+
       throw new HttpException(
         'Failed to restore pin',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -365,33 +428,55 @@ export class PostService {
     }
   }
 
-  private async recommendPostsByTags(tags: string[], excludePin: number) {
+  private async recommendPostsByTags(tags: string[], excludePin?: string) {
     try {
       if (!tags || tags.length === 0) return [];
 
       const recommendedPins = await this.prisma.pin.findMany({
         where: {
-          AND: [
-            { tags: { some: { name: { in: tags } } } },
-            { id: { not: excludePin } },
-            { deleted_at: null },
-          ],
-        },
-        orderBy: {
-          tags: {
-            _count: 'desc',
+          id: { not: excludePin },
+          is_deleted: false,
+          pin_tags: {
+            some: {
+              tag: {
+                name: {
+                  in: tags,
+                },
+              },
+            },
           },
         },
-        take: 20,
+        // take: 20,  optional
         include: {
-          user: {},
-          tags: {
-            select: { name: true },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              profile_img: true,
+            },
+          },
+          pin_tags: {
+            include: {
+              tag: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
+            },
           },
         },
       });
 
-      return recommendedPins;
+      // Format for frontend (if needed)
+      return recommendedPins.map((pin) => ({
+        ...pin,
+        tags: pin.pin_tags.map((pt) => ({
+          name: pt.tag.name,
+          slug: pt.tag.slug,
+        })),
+      }));
     } catch (error) {
       console.error('Failed to fetch recommended pins:', error);
       return [];
@@ -408,12 +493,13 @@ export class PostService {
     try {
       const pins = await this.prisma.pin.findMany({
         where: {
-          deleted_at: null, // is_deleted
-          tags: {
+          is_deleted: false,
+          pin_tags: {
             some: {
-              slug: {
-                contains: tagQuery,
-                mode: 'insensitive',
+              tag: {
+                name: {
+                  contains: searchTerm,
+                },
               },
             },
           },
@@ -426,16 +512,16 @@ export class PostService {
               profile_img: true,
             },
           },
-          tags: {
+          pin_tags: {
             select: {
-              id: true,
-              name: true,
-              slug: true,
+              tag: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
             },
           },
-        },
-        orderBy: {
-          created_at: 'desc',
         },
       });
 
@@ -446,8 +532,79 @@ export class PostService {
       };
     } catch (error) {
       throw new HttpException(
-        'Search failed',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        error.message || 'Search failed',
+        error.statusCode || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async savePostForUser({
+    postId,
+    userId,
+  }: {
+    postId: string;
+    userId: string;
+  }) {
+    try {
+      const alreadySaved = await this.prisma.saved_pin.findUnique({
+        where: {
+          user_id_pin_id: {
+            user_id: userId,
+            pin_id: postId,
+          },
+        },
+      });
+
+      if (alreadySaved) {
+        throw new HttpException('Post already saved', HttpStatus.CONFLICT);
+      }
+
+      const getPostAssociatedTags = await this.prisma.pin.findUnique({
+        where: { id: postId },
+        select: {
+          pin_tags: {
+            select: {
+              tag_id: true,
+            },
+          },
+        },
+      });
+
+      if (!getPostAssociatedTags) {
+        throw new NotFoundException('Post not found');
+      }
+
+      return await this.prisma.$transaction(async (prisma) => {
+        // 1. Save the pin
+        await prisma.saved_pin.create({
+          data: {
+            user_id: userId,
+            pin_id: postId,
+          },
+        });
+
+        await prisma.user_tags.createMany({
+          data: getPostAssociatedTags.pin_tags.map(({ tag_id }) => ({
+            user_id: userId,
+            tag_id: tag_id,
+          })),
+          skipDuplicates: true,
+        });
+
+        return {
+          message: 'Post saved successfully',
+        };
+      });
+    } catch (error) {
+      if (
+        error instanceof HttpException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+      throw new HttpException(
+        error.message || 'Failed to save post',
+        error.statusCode || HttpStatus.BAD_REQUEST,
       );
     }
   }

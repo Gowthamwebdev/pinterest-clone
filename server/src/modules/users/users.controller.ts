@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Param,
-  ParseIntPipe,
   Put,
   UseGuards,
   Body,
@@ -11,14 +10,17 @@ import {
 import { UserService } from './users.service';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('users')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get(':id')
-  async getUserById(@Param('id', ParseIntPipe) id: number) {
+  async getUserById(@Param('id') id: string) {
+    console.log(JSON.stringify(id));
     return this.userService.findUserById(id);
   }
 

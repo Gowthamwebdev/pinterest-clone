@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "users" ALTER COLUMN "first_name" SET DATA TYPE TEXT,
-ALTER COLUMN "last_name" SET DATA TYPE TEXT;

@@ -9,13 +9,10 @@ import {
   UploadedFile,
   Get,
   Param,
-  ParseIntPipe,
   UsePipes,
   ValidationPipe,
   Delete,
   Query,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -23,8 +20,10 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { PostService } from './post.service';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { SearchQueryDto } from './dto/search-query.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('posts')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 export class PostController {
   constructor(private postService: PostService) {}
@@ -41,51 +40,56 @@ export class PostController {
   }
 
   @Get()
-  async getAllPosts() {
-    return await this.postService.getAllPosts();
+  async getAllPosts(@Request() req) {
+    return await this.postService.getAllPosts(req.user.userId);
   }
 
-  @Get('search/')
+  @Get('search')
   async searchPinsByTag(@Query() queryDto: SearchQueryDto) {
     console.log(queryDto.query);
     return this.postService.searchPinsByTag(queryDto.query);
   }
 
-  @Get(':pinId')
-  async getPostById(@Param('pinId', ParseIntPipe) pinId: number) {
-    return await this.postService.getPostById(pinId);
+  @Get(':postId')
+  async getPostById(@Param('postId') postId: string) {
+    return await this.postService.getPostById(postId);
   }
 
-  @Put(':pinId')
+  @Put(':postId')
   @UsePipes(new ValidationPipe({ transform: true }))
   async editPostById(
     @Request() req,
-    @Param('pinId', ParseIntPipe) pinId: number,
+    @Param('postId') postId: string,
     @Body() updateData: UpdatePostDto,
   ) {
     return await this.postService.editPostById({
       userId: req.user.userId,
-      pinId,
+      postId,
       updateData,
     });
   }
 
-  @Delete(':pinId')
-  async deletePin(@Request() req, @Param('pinId', ParseIntPipe) pinId: number) {
+  @Delete(':postId')
+  async deletePin(@Request() req, @Param('postId') postId: string) {
     return await this.postService.deletePostById({
       userId: req.user.userId,
-      pinId,
+      postId,
     });
   }
 
-  @Post(':pinId/restore')
-  async restorePin(
-    @Request() req,
-    @Param('pinId', ParseIntPipe) pinId: number,
-  ) {
+  @Post(':postId/restore')
+  async restorePin(@Request() req, @Param('postId') postId: string) {
     return await this.postService.restorePostById({
       userId: req.user.userId,
-      pinId,
+      postId,
+    });
+  }
+
+  @Post(':postId/save')
+  async savePostForUser(@Request() req, @Param('postId') postId: string) {
+    return this.postService.savePostForUser({
+      userId: req.user.userId,
+      postId,
     });
   }
 }

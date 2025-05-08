@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  NotFoundException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginDto, SignupDto } from './dto/auth.dto';
@@ -19,14 +13,19 @@ export class AuthService {
   async validateUser(email: string, pass: string): Promise<any> {
     try {
       const user = await this.prisma.user.findUnique({ where: { email } });
-      if (!user) throw new NotFoundException('User not found');
+      if (!user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
       const isValid = await bcrypt.compare(pass, user.password);
-      if (!isValid) throw new UnauthorizedException('Invalid password');
+      if (!isValid)
+        throw new HttpException('Invalid password', HttpStatus.UNAUTHORIZED);
 
       return user;
     } catch (error) {
-      throw new NotFoundException('Unexpected error occured: ', error.message);
+      throw new HttpException(
+        'Unexpected error occured: ',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -34,7 +33,7 @@ export class AuthService {
     try {
       const user = await this.validateUser(userData.email, userData.password);
       if (!user) {
-        throw new HttpException('user not found', HttpStatus.NOT_FOUND);
+        throw new HttpException('user not found', HttpStatus.NO_CONTENT);
       }
       const payload = {
         sub: user.id,
@@ -46,11 +45,14 @@ export class AuthService {
         token: this.jwtService.sign(payload),
       };
     } catch (error) {
-      throw new NotFoundException('Unexpected error occured: ', error.message);
+      throw new HttpException(
+        'Unexpected error occured: ',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
-  async getUserProfile(userId: number) {
+  async getUserProfile(userId: string) {
     try {
       console.log('Fetching profile for user ID:', userId);
       const user = await this.prisma.user.findUnique({
@@ -69,7 +71,10 @@ export class AuthService {
 
       return user;
     } catch (error) {
-      throw new NotFoundException('Unexpected error occured: ', error.message);
+      throw new HttpException(
+        'Unexpected error occured: ',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -102,7 +107,7 @@ export class AuthService {
     } catch (error) {
       throw new HttpException(
         'Unexpected error occurred',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.BAD_REQUEST,
       );
     }
   }
