@@ -1,20 +1,20 @@
-import { useState } from "react";
-import AuthModal from "./AuthModal";
-import Navbar from "../components/layout/LandingNav";
+import { useState } from 'react';
+import Navbar from '../components/layout/LandingNav';
+import AuthModal from '../components/auth/AuthModal';
 
 const LandingPage = () => {
   const [openModal, setOpenModal] = useState(false);
-  const [authType, setAuthType] = useState<"login" | "signup">("login");
+  const [authType, setAuthType] = useState<'login' | 'signup'>('login');
 
   return (
     <div className="flex flex-col h-screen">
       <Navbar
         onLoginClick={() => {
-          setAuthType("login");
+          setAuthType('login');
           setOpenModal(true);
         }}
         onSignupClick={() => {
-          setAuthType("signup");
+          setAuthType('signup');
           setOpenModal(true);
         }}
       />
@@ -24,10 +24,7 @@ const LandingPage = () => {
       </div>
 
       {openModal && (
-        <AuthModal
-          onClose={() => setOpenModal(false)}
-          defaultType={authType}
-        />
+        <AuthModal onClose={() => setOpenModal(false)} defaultType={authType} />
       )}
     </div>
   );

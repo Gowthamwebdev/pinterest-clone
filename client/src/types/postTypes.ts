@@ -1,5 +1,6 @@
-export type pinState = {
-  imgUrl: string;
+export type postState = {
+  id: string;
+  image_url: string;
   title: string;
   desc: string;
   tags: string;

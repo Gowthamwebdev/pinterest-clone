@@ -17,8 +17,6 @@ import {
 } from 'src/shared/utils/functions';
 import {} from 'src/shared/utils/constants';
 import { cloudinaryDto } from './dto/cloudinary.dto';
-import { contains } from 'class-validator';
-
 @Injectable()
 export class PostService {
   constructor(
@@ -114,8 +112,8 @@ export class PostService {
         };
       } catch (error) {
         throw new HttpException(
-          `Failed to create pin: ${error.message}`,
-          HttpStatus.BAD_REQUEST,
+          error.message || 'Failed to create pin',
+          error.statusCode || HttpStatus.BAD_REQUEST,
         );
       }
     });
@@ -132,10 +130,7 @@ export class PostService {
           tag_id: true,
         },
       });
-      console.log(userWithTags);
       const tagIds = userWithTags.map((ut) => ut.tag_id);
-      console.log(tagIds);
-
       const preferredPosts = await this.prisma.pin.findMany({
         where: {
           pin_tags: {
@@ -162,6 +157,9 @@ export class PostService {
               },
             },
           },
+        },
+        orderBy: {
+          created_at: 'desc',
         },
       });
 
@@ -207,8 +205,8 @@ export class PostService {
     } catch (error) {
       console.error('Error fetching pins', error);
       throw new HttpException(
-        'Failed to fetch pins',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        error.message || 'Unexpected error occurred',
+        error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -268,7 +266,10 @@ export class PostService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new HttpException('Failed to fetch pin', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        error.message || 'Unexpected error occurred',
+        error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
   async editPostById({
@@ -343,8 +344,8 @@ export class PostService {
         throw error;
       }
       throw new HttpException(
-        'Failed to update pin',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        error.message || 'Unexpected error occurred',
+        error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -374,12 +375,9 @@ export class PostService {
         message: 'Pin deleted successfully',
       };
     } catch (error) {
-      if (error instanceof HttpException || error instanceof NotFoundException)
-        throw error;
-
       throw new HttpException(
-        'Failed to delete pin',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        error.message || 'Unexpected error occurred',
+        error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -418,12 +416,9 @@ export class PostService {
         message: 'Pin restored successfully',
       };
     } catch (error) {
-      if (error instanceof HttpException || error instanceof NotFoundException)
-        throw error;
-
       throw new HttpException(
-        'Failed to restore pin',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        error.message || 'Unexpected error occurred',
+        error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -478,8 +473,10 @@ export class PostService {
         })),
       }));
     } catch (error) {
-      console.error('Failed to fetch recommended pins:', error);
-      return [];
+      throw new HttpException(
+        error.message || 'Unexpected error occurred',
+        error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -571,7 +568,7 @@ export class PostService {
       });
 
       if (!getPostAssociatedTags) {
-        throw new NotFoundException('Post not found');
+        throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
       }
 
       return await this.prisma.$transaction(async (prisma) => {

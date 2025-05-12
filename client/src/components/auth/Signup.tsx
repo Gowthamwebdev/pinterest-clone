@@ -1,15 +1,15 @@
 import { Box, Button, TextField, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { userSignupApi } from '../api/authApi';
+import { userSignupApi } from '../../api/authApi';
 
 const SignUpForm: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
 
   const handleSignup = async () => {
     setLoading(true);
@@ -18,12 +18,12 @@ const SignUpForm: React.FC = () => {
       console.log('email', email);
       console.log('pass', password);
       console.log('Birthdate', dateOfBirth);
-      
+
       const response = await userSignupApi({ email, password, dateOfBirth });
-      console.log("Signup Successful:", response.message);
+      console.log('Signup Successful:', response.message);
       setError(response.message);
-      navigate("/");
-    } catch (err: any) {
+      navigate('/');
+    } catch (err) {
       console.error(err.message);
       setError(err.message || 'Signup failed. Please try again.');
     } finally {
@@ -36,7 +36,7 @@ const SignUpForm: React.FC = () => {
       <Typography textAlign="left">
         <h1>Email</h1>
         <TextField
-        placeholder='Email'
+          placeholder="Email"
           fullWidth
           margin="normal"
           value={email}
@@ -47,7 +47,7 @@ const SignUpForm: React.FC = () => {
       <Typography textAlign="left">
         <h1>Password</h1>
         <TextField
-        placeholder='Create your password'
+          placeholder="Create your password"
           fullWidth
           margin="normal"
           type="password"
@@ -67,7 +67,6 @@ const SignUpForm: React.FC = () => {
               shrink: true,
             },
           }}
-          
           value={dateOfBirth}
           onChange={(e) => setDateOfBirth(e.target.value)}
         />
@@ -97,4 +96,4 @@ const SignUpForm: React.FC = () => {
   );
 };
 
-export default SignUpForm; 
+export default SignUpForm;

@@ -1,16 +1,19 @@
-// components/form/AddPinForm.tsx
 import React from 'react';
 import { TextField, Button, Typography, Divider } from '@mui/material';
 import { FiArrowUpCircle } from 'react-icons/fi';
 import { usePinStore } from '../../stores/pinStore';
 
-interface AddPinFormProps {
+interface AddPostFormProps {
   imagePreview: string | null;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const AddPinForm: React.FC<AddPinFormProps> = ({ imagePreview, onImageChange }) => {
-  const { title, desc, tags, board, setTitle, setDesc, setTags, setBoard } = usePinStore();
+const AddPostForm: React.FC<AddPostFormProps> = ({
+  imagePreview,
+  onImageChange,
+}) => {
+  const { title, desc, tags, board, setTitle, setDesc, setTags, setBoard } =
+    usePinStore();
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 w-full">
@@ -22,7 +25,9 @@ const AddPinForm: React.FC<AddPinFormProps> = ({ imagePreview, onImageChange }) 
               className="flex flex-col items-center justify-center h-full cursor-pointer text-gray-700"
             >
               <FiArrowUpCircle size={50} className="mb-2" />
-              <span className="font-medium">Choose a file or drag and drop</span>
+              <span className="font-medium">
+                Choose a file or drag and drop
+              </span>
               <input
                 id="pin-image-upload"
                 type="file"
@@ -30,7 +35,10 @@ const AddPinForm: React.FC<AddPinFormProps> = ({ imagePreview, onImageChange }) 
                 onChange={onImageChange}
                 className="hidden"
               />
-              <Typography variant="caption" className="mt-2 text-gray-500 text-center">
+              <Typography
+                variant="caption"
+                className="mt-2 text-gray-500 text-center"
+              >
                 .jpg under 20MB or .mp4 under 200MB
               </Typography>
             </label>
@@ -43,12 +51,14 @@ const AddPinForm: React.FC<AddPinFormProps> = ({ imagePreview, onImageChange }) 
           )}
         </div>
         <Divider className="w-4/5 my-2" />
-        <Button variant="outlined"
-         sx={{ 
+        <Button
+          variant="outlined"
+          sx={{
             boxShadow: 'none',
             borderRadius: 2,
-            width:370,
-            }}>
+            width: 370,
+          }}
+        >
           Save from URL
         </Button>
       </div>
@@ -95,4 +105,4 @@ const AddPinForm: React.FC<AddPinFormProps> = ({ imagePreview, onImageChange }) 
   );
 };
 
-export default AddPinForm;
+export default AddPostForm;

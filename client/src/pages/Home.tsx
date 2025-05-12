@@ -1,11 +1,10 @@
-import React from 'react'
+import { ReactNode } from 'react';
 
-const Home: React.FC = () => {
-  return (
-    <div>
-     <h2>Home page</h2>
-    </div>
-  )
+interface HomeProps {
+  children?: ReactNode;
 }
 
-export default Home
+const Home: React.FC<HomeProps> = ({ children }) => {
+  return <>{children}</>;
+};
+export default Home;

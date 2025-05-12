@@ -1,4 +1,11 @@
-import { Avatar, Button, IconButton, Menu, MenuItem, TextField } from '@mui/material';
+import {
+  Avatar,
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  TextField,
+} from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiChevronDown } from 'react-icons/fi';
@@ -7,8 +14,8 @@ import LogoutForm from '../form/LogoutFom';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, resetAuth } = useAuthStore();
-  const { openModal }=useAuthStore();
+  const { isAuthenticated } = useAuthStore();
+  const { openModal } = useAuthStore();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -27,7 +34,6 @@ const Navbar: React.FC = () => {
 
   return (
     <div className="w-full flex items-center justify-between px-6 py-3 bg-white shadow sticky top-0 z-10">
-      
       <div className="flex items-center bg-[#f5f5f5] px-2 py-0.5 rounded-lg flex-grow mr-3">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -35,9 +41,13 @@ const Navbar: React.FC = () => {
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          style={{ width: 20, height: 20, color: "#757575" }}
+          style={{ width: 20, height: 20, color: '#757575' }}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18.5a7.5 7.5 0 006.15-1.85z" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18.5a7.5 7.5 0 006.15-1.85z"
+          />
         </svg>
         <TextField
           placeholder="Search"
@@ -69,9 +79,15 @@ const Navbar: React.FC = () => {
                 },
               }}
             >
-              <MenuItem onClick={() => handleNavigation('profile')}>Profile</MenuItem>
-              <MenuItem onClick={() => handleNavigation('account')}>My Account</MenuItem>
-              <MenuItem onClick={handleMenuClose}><LogoutForm/></MenuItem>
+              <MenuItem onClick={() => handleNavigation('profile')}>
+                Profile
+              </MenuItem>
+              <MenuItem onClick={() => handleNavigation('account')}>
+                My Account
+              </MenuItem>
+              <MenuItem onClick={handleMenuClose}>
+                <LogoutForm />
+              </MenuItem>
             </Menu>
           </>
         ) : (
@@ -79,8 +95,8 @@ const Navbar: React.FC = () => {
             <Button
               variant="text"
               sx={{
-                color: "black",
-                fontWeight: "bold",
+                color: 'black',
+                fontWeight: 'bold',
                 textTransform: 'none',
               }}
               onClick={() => openModal(false)}
