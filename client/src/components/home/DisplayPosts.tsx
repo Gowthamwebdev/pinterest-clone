@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getPosts } from '../../api/postApi';
 import { postState } from '../../types/postTypes';
 import MasonryGrid from './MasonryGrid';
-import { MasonryLoader } from '../ui/loader/MasonryLoader';
+import { MasonryLoader } from '../ui/loader/CardLoader';
 
 const DisplayPosts: React.FC = () => {
   const [posts, setPosts] = useState<postState[]>([]);

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ALLOWED_MIME_TYPES, CLOUDINARY_FILE_SIZE } from './constants';
 
+//to validate the image file
 export function validateImage(image: Express.Multer.File) {
   if (!image) throw new BadRequestException('Image is required');
   if (image.size > CLOUDINARY_FILE_SIZE)
@@ -13,6 +14,7 @@ export function validateImage(image: Express.Multer.File) {
     throw new UnsupportedMediaTypeException('Invalid image type');
 }
 
+//to create an array of tags from a comma-separated string
 export function createTagArray(tags: string): string[] {
   return tags
     ? tags
@@ -22,6 +24,7 @@ export function createTagArray(tags: string): string[] {
     : [];
 }
 
+// Slugs are URL-friendly strings that are typically used in web addresses
 export function createSlug(name: string): string {
   return name
     .toLowerCase()
@@ -29,3 +32,9 @@ export function createSlug(name: string): string {
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-'); // Replace multiple hyphens with single
 }
+
+//to get the current date in YYYY-MM-DD format
+export const getDailySeed = () => {
+  const today = new Date().toISOString().split('T')[0];
+  return today;
+};

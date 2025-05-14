@@ -11,13 +11,21 @@ import { useNavigate } from 'react-router-dom';
 import { FiChevronDown } from 'react-icons/fi';
 import { useAuthStore } from '../../stores/AuthStore';
 import LogoutForm from '../form/LogoutFom';
+import { useUiStore } from '../../stores/UiStore';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const { openModal } = useAuthStore();
+  const { setOpenModal } = useUiStore();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   const handleAvatarClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -33,8 +41,8 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <div className="w-full flex items-center justify-between px-6 py-3 bg-white shadow sticky top-0 z-10">
-      <div className="flex items-center bg-[#f5f5f5] px-2 py-0.5 rounded-lg flex-grow mr-3">
+    <div className="w-full flex items-center justify-between px-6 py-3 bg-white sticky top-0 z-10">
+      <div className="flex items-center bg-gray-100 px-2 py-0.5 rounded-lg flex-grow mr-3">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -52,9 +60,12 @@ const Navbar: React.FC = () => {
         <TextField
           placeholder="Search"
           variant="standard"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={handleSearch}
           InputProps={{
             disableUnderline: true,
-            sx: { ml: 1, fontSize: 14 },
+            sx: { ml: 1, fontSize: 14, paddingY: 1 },
           }}
           sx={{ flex: 1 }}
         />
@@ -99,13 +110,13 @@ const Navbar: React.FC = () => {
                 fontWeight: 'bold',
                 textTransform: 'none',
               }}
-              onClick={() => openModal(false)}
+              onClick={() => setOpenModal(false)}
             >
               Signup
             </Button>
             <Button
               variant="outlined"
-              onClick={() => openModal(true)}
+              onClick={() => setOpenModal(true)}
               sx={{
                 backgroundColor: '#e60023',
                 '&:hover': { backgroundColor: '#ad081b' },

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import pinterest from '../../assets/pinterest.svg';
+import pinterest from '/pinterest.svg';
 import {
   FiHome,
   FiSearch,

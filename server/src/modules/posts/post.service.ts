@@ -250,17 +250,9 @@ export class PostService {
       return {
         statusCode: 200,
         message: 'Pin fetched successfully',
-        data: {
-          currentPin: {
-            ...pin,
-            tags: pin.pin_tags.map((pinTag) => ({
-              // id: tag.id,
-              name: pinTag.tag.name,
-              slug: pinTag.tag.slug,
-            })),
-          },
-          recommendedPins: recommendations,
-        },
+
+        currentPin: pin,
+        recommendedPins: recommendations,
       };
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -272,6 +264,34 @@ export class PostService {
       );
     }
   }
+
+  async getExplorePosts() {
+    try {
+      const tags = await this.prisma.tag.findMany({
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
+        take: 5,
+      });
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Tags fetched successfully',
+        data: tags,
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to fetch tags',
+        error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async editPostById({
     userId,
     postId,

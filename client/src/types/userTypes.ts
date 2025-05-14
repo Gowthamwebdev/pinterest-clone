@@ -12,13 +12,13 @@ export type userState = {
   name: string;
   email: string;
   password: string;
-  profileImg: string;
+  profile_img: string;
 
   setUserId: (userId: string) => void;
   setName: (name: string) => void;
   setEmail: (email: string) => void;
   setPassword: (password: string) => void;
-  setProfileImg: (profileImg: string) => void;
+  setProfileImg: (profile_img: string) => void;
 
   resetUser: () => void;
 };

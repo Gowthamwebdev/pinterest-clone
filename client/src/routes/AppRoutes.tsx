@@ -11,6 +11,9 @@ import { useAuthStore } from '../stores/AuthStore';
 import { useEffect } from 'react';
 import Cookies from 'js-cookie';
 import DisplayPosts from '../components/home/DisplayPosts';
+import FetchSinglePost from '../components/home/FetchSinglePost';
+import { UserProfile } from '../components/users/UserProfile';
+import SearchResults from '../components/SearchResults';
 
 const AppRoutes = () => {
   const token = useAuth();
@@ -24,8 +27,6 @@ const AppRoutes = () => {
       setAccessToken(token);
     }
   }, [setIsAuthenticated, setAccessToken]);
-  console.log('isAuthenticated', isAuthenticated);
-  console.log('token', token);
   const ProtectedRoute = () => {
     if (!isAuthenticated || !token) {
       return (
@@ -56,18 +57,16 @@ const AppRoutes = () => {
       </Route>
 
       <Route element={<ProtectedRoute />}>
-        <Route
-          path="/home"
-          element={
-            <Home>
-              <DisplayPosts />
-            </Home>
-          }
-        />
+        <Route path="/home" element={<Home />}>
+          <Route index element={<DisplayPosts />} />
+        </Route>
+        <Route path="/search" element={<SearchResults />} />
+        <Route path="/post/:id" element={<FetchSinglePost />} />
         <Route path="/today" element={<Explore />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/pin-creation-tool" element={<CreatePost />} />
         <Route path="/messages" element={<Home />} />
+        <Route path="/profile/:id" element={<UserProfile />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Route>
     </Routes>

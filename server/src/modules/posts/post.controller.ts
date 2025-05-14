@@ -50,6 +50,11 @@ export class PostController {
     return this.postService.searchPinsByTag(queryDto.query);
   }
 
+  @Get('explore')
+  async getExplorePosts() {
+    return await this.postService.getExplorePosts();
+  }
+
   @Get(':postId')
   async getPostById(@Param('postId') postId: string) {
     return await this.postService.getPostById(postId);

@@ -3,12 +3,17 @@ import { postState } from '../../types/postTypes';
 import { IconButton } from '@mui/material';
 import { MoreHoriz } from '@mui/icons-material';
 import { FiShare } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 interface MasonryGridProps {
   posts: postState[];
 }
 
 const MasonryGrid: React.FC<MasonryGridProps> = ({ posts }) => {
+  const navigate = useNavigate();
+  const handlePostClick = (postId: string) => {
+    navigate(`/post/${postId}`);
+  };
   return (
     <Masonry
       columns={{ xs: 2, sm: 2, md: 3, lg: 5, xl: 6 }}
@@ -19,6 +24,7 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({ posts }) => {
         <div
           key={post.id}
           className="relative group rounded-lg overflow-hidden"
+          onClick={() => handlePostClick(post.id)}
         >
           <img
             className="w-full h-full object-cover transition-transform duration-300 group-hover:brightness-90"

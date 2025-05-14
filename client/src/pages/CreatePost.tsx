@@ -9,12 +9,12 @@ const CreatePost: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const {
     title,
-    desc,
+    description,
     tags,
     board,
     setImgUrl,
     setTitle,
-    setDesc,
+    setDescription,
     setTags,
     setBoard,
   } = usePinStore();
@@ -35,11 +35,18 @@ const CreatePost: React.FC = () => {
     }
 
     const postPayload = {
+      id: '',
       title,
-      desc,
+      description,
       tags,
       board,
       image: imageFile,
+      image_url: '',
+      setImgUrl,
+      setTitle,
+      setDescription,
+      setTags,
+      setBoard,
     };
 
     try {
@@ -47,7 +54,7 @@ const CreatePost: React.FC = () => {
       console.log('response:', data);
 
       setTitle('');
-      setDesc('');
+      setDescription('');
       setTags('');
       setBoard('');
       setImgUrl('');

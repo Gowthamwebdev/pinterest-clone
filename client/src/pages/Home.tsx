@@ -1,10 +1,15 @@
 import { ReactNode } from 'react';
+import { Outlet } from 'react-router-dom';
 
 interface HomeProps {
   children?: ReactNode;
 }
 
-const Home: React.FC<HomeProps> = ({ children }) => {
-  return <>{children}</>;
+const Home: React.FC<HomeProps> = () => {
+  return (
+    <>
+      <Outlet />
+    </>
+  );
 };
 export default Home;
