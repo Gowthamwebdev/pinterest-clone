@@ -46,12 +46,22 @@ export const getPostById = async (postId: string) => {
   }
 };
 
-export const savePost = async (postId: string) => {
+export const toggleSavePost = async (postId: string) => {
   try {
     const response = await apiClient.post(`/posts/${postId}/save`);
     return response.data;
   } catch (error) {
     console.error('Error saving post:', error);
+    throw error;
+  }
+};
+
+export const checkIfPostIsSaved = async (postId: string) => {
+  try {
+    const response = await apiClient.get(`/posts/${postId}/is-saved`);
+    return response.data;
+  } catch (error) {
+    console.error('Error checking if post is saved:', error);
     throw error;
   }
 };

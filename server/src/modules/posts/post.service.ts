@@ -108,11 +108,11 @@ export class PostService {
 
         return {
           statusCode: HttpStatus.CREATED,
-          message: 'Pin created successfully',
+          message: 'Post created successfully',
         };
       } catch (error) {
         throw new HttpException(
-          error.message || 'Failed to create pin',
+          error.message || 'Failed to create post',
           error.statusCode || HttpStatus.BAD_REQUEST,
         );
       }
@@ -203,7 +203,7 @@ export class PostService {
         remainingPosts,
       };
     } catch (error) {
-      console.error('Error fetching pins', error);
+      console.error('Error fetching posts', error);
       throw new HttpException(
         error.message || 'Unexpected error occurred',
         error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
@@ -213,7 +213,7 @@ export class PostService {
 
   async getPostById(postId: string) {
     try {
-      const pin = await this.prisma.pin.findUnique({
+      const post = await this.prisma.pin.findUnique({
         where: {
           id: postId,
           is_deleted: false,
@@ -240,18 +240,21 @@ export class PostService {
         },
       });
 
-      if (!pin) {
+      if (!post) {
         throw new HttpException('Pin not found', HttpStatus.NOT_FOUND);
       }
 
-      const tagNames = pin.pin_tags.map((pinTag) => pinTag.tag.name);
-      const recommendations = await this.recommendPostsByTags(tagNames, pin.id);
+      const tagNames = post.pin_tags.map((pinTag) => pinTag.tag.name);
+      const recommendations = await this.recommendPostsByTags(
+        tagNames,
+        post.id,
+      );
 
       return {
         statusCode: 200,
-        message: 'Pin fetched successfully',
+        message: 'Post fetched successfully',
 
-        currentPin: pin,
+        currentPin: post,
         recommendedPins: recommendations,
       };
     } catch (error) {
@@ -354,7 +357,7 @@ export class PostService {
 
       return {
         statusCode: HttpStatus.OK,
-        message: 'Pin updated successfully',
+        message: 'Post updated successfully',
       };
     } catch (error) {
       if (
@@ -372,15 +375,15 @@ export class PostService {
 
   async deletePostById({ postId, userId }: { postId: string; userId: string }) {
     try {
-      const pin = await this.prisma.pin.findUnique({
+      const post = await this.prisma.pin.findUnique({
         where: { id: postId },
       });
 
-      if (!pin) throw new NotFoundException('Pin not found');
+      if (!post) throw new NotFoundException('Pin not found');
 
-      if (pin.user_id !== userId) {
+      if (post.user_id !== userId) {
         throw new HttpException(
-          'You are not authorized to delete this pin',
+          'You are not authorized to delete this post',
           HttpStatus.FORBIDDEN,
         );
       }
@@ -392,7 +395,7 @@ export class PostService {
 
       return {
         statusCode: HttpStatus.OK,
-        message: 'Pin deleted successfully',
+        message: 'Post deleted successfully',
       };
     } catch (error) {
       throw new HttpException(
@@ -410,16 +413,16 @@ export class PostService {
     userId: string;
   }) {
     try {
-      const pin = await this.prisma.pin.findFirst({
+      const post = await this.prisma.pin.findFirst({
         where: {
           id: postId,
           is_deleted: true,
         },
       });
 
-      if (!pin) throw new NotFoundException('Deleted pin not found');
+      if (!post) throw new NotFoundException('Deleted pin not found');
 
-      if (pin.user_id !== userId) {
+      if (post.user_id !== userId) {
         throw new HttpException(
           'You are not authorized to restore this pin',
           HttpStatus.FORBIDDEN,
@@ -443,13 +446,13 @@ export class PostService {
     }
   }
 
-  private async recommendPostsByTags(tags: string[], excludePin?: string) {
+  private async recommendPostsByTags(tags: string[], excludePost?: string) {
     try {
       if (!tags || tags.length === 0) return [];
 
-      const recommendedPins = await this.prisma.pin.findMany({
+      const recommendedPosts = await this.prisma.pin.findMany({
         where: {
-          id: { not: excludePin },
+          id: { not: excludePost },
           is_deleted: false,
           pin_tags: {
             some: {
@@ -470,28 +473,10 @@ export class PostService {
               profile_img: true,
             },
           },
-          pin_tags: {
-            include: {
-              tag: {
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                },
-              },
-            },
-          },
         },
       });
 
-      // Format for frontend (if needed)
-      return recommendedPins.map((pin) => ({
-        ...pin,
-        tags: pin.pin_tags.map((pt) => ({
-          name: pt.tag.name,
-          slug: pt.tag.slug,
-        })),
-      }));
+      return recommendedPosts;
     } catch (error) {
       throw new HttpException(
         error.message || 'Unexpected error occurred',
@@ -508,7 +493,7 @@ export class PostService {
     const searchTerm = tagQuery.toLowerCase().trim();
     console.log(searchTerm);
     try {
-      const pins = await this.prisma.pin.findMany({
+      const posts = await this.prisma.pin.findMany({
         where: {
           is_deleted: false,
           pin_tags: {
@@ -544,8 +529,8 @@ export class PostService {
 
       return {
         statusCode: HttpStatus.OK,
-        message: 'Pins fetched successfully',
-        data: pins,
+        message: 'Posts fetched successfully',
+        data: posts,
       };
     } catch (error) {
       throw new HttpException(
@@ -555,13 +540,7 @@ export class PostService {
     }
   }
 
-  async savePostForUser({
-    postId,
-    userId,
-  }: {
-    postId: string;
-    userId: string;
-  }) {
+  async toggleSavePost({ postId, userId }: { postId: string; userId: string }) {
     try {
       const alreadySaved = await this.prisma.saved_pin.findUnique({
         where: {
@@ -573,7 +552,18 @@ export class PostService {
       });
 
       if (alreadySaved) {
-        throw new HttpException('Post already saved', HttpStatus.CONFLICT);
+        await this.prisma.saved_pin.delete({
+          where: {
+            user_id_pin_id: {
+              user_id: userId,
+              pin_id: postId,
+            },
+          },
+        });
+        return {
+          message: 'Post unsaved successfully',
+          isSaved: false,
+        };
       }
 
       const getPostAssociatedTags = await this.prisma.pin.findUnique({
@@ -610,6 +600,7 @@ export class PostService {
 
         return {
           message: 'Post saved successfully',
+          isSaved: true,
         };
       });
     } catch (error) {
@@ -622,6 +613,37 @@ export class PostService {
       throw new HttpException(
         error.message || 'Failed to save post',
         error.statusCode || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async checkIfPostSaved({
+    userId,
+    postId,
+  }: {
+    postId: string;
+    userId: string;
+  }) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          saved_pins: {
+            where: { pin_id: postId },
+            select: { pin_id: true },
+          },
+        },
+      });
+
+      if (!user) {
+        throw new HttpException(`User not found`, HttpStatus.NOT_FOUND);
+      }
+
+      return user.saved_pins.length > 0;
+    } catch (error) {
+      throw new HttpException(
+        error?.message || 'Unexpected error occurred',
+        error?.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

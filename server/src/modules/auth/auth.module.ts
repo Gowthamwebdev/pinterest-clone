@@ -6,7 +6,6 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from 'src/shared/strategies/jwt.strategy';
 import { LocalStrategy } from 'src/shared/strategies/local.strategy';
 import { MailerModule } from '../mailer/mailer.module';
-// import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
@@ -17,14 +16,9 @@ import { PrismaModule } from 'src/prisma/prisma.module';
       signOptions: { expiresIn: '1d' },
     }),
     MailerModule,
-    PrismaModule
+    PrismaModule,
   ],
-  providers: [
-    AuthService, 
-    JwtStrategy, 
-    LocalStrategy, 
-    // PrismaService
-  ],
+  providers: [AuthService, JwtStrategy, LocalStrategy],
   controllers: [AuthController],
   exports: [PassportModule, JwtModule],
 })

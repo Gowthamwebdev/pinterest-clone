@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Divider, Typography, Button } from '@mui/material';
-import { usePinStore } from '../stores/pinStore';
+import { usePostStore } from '../stores/postStore';
 import AddPostForm from '../components/form/AddPinForm';
 import { createPost } from '../api/postApi';
+import { toast } from 'react-hot-toast';
 
 const CreatePost: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -17,7 +18,7 @@ const CreatePost: React.FC = () => {
     setDescription,
     setTags,
     setBoard,
-  } = usePinStore();
+  } = usePostStore();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
@@ -50,8 +51,14 @@ const CreatePost: React.FC = () => {
     };
 
     try {
-      const data = await createPost(postPayload);
-      console.log('response:', data);
+      await toast.promise(
+        createPost(postPayload).then((res) => res.data),
+        {
+          loading: 'Publishing post...',
+          success: 'Post published successfully!',
+          error: 'Failed to publish post.',
+        },
+      );
 
       setTitle('');
       setDescription('');

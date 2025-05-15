@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextField, Button, Typography, Divider } from '@mui/material';
 import { FiArrowUpCircle } from 'react-icons/fi';
-import { usePinStore } from '../../stores/pinStore';
+import { usePostStore } from '../../stores/postStore';
 
 interface AddPostFormProps {
   imagePreview: string | null;
@@ -12,8 +12,16 @@ const AddPostForm: React.FC<AddPostFormProps> = ({
   imagePreview,
   onImageChange,
 }) => {
-  const { title, desc, tags, board, setTitle, setDesc, setTags, setBoard } =
-    usePinStore();
+  const {
+    title,
+    description,
+    tags,
+    board,
+    setTitle,
+    setDescription,
+    setTags,
+    setBoard,
+  } = usePostStore();
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 w-full">
@@ -39,7 +47,7 @@ const AddPostForm: React.FC<AddPostFormProps> = ({
                 variant="caption"
                 className="mt-2 text-gray-500 text-center"
               >
-                .jpg under 20MB or .mp4 under 200MB
+                .jpg under 5MB or .mp4 under 200MB
               </Typography>
             </label>
           ) : (
@@ -78,8 +86,8 @@ const AddPostForm: React.FC<AddPostFormProps> = ({
           rows={4}
           fullWidth
           disabled={!imagePreview}
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
         />
         <TextField
           label="Tags"

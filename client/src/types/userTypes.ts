@@ -3,7 +3,7 @@ export type userType = {
   name: string;
   email: string;
   password: string;
-  profileImg: string;
+  profile_img: string;
   dateOfBirth: string;
 };
 

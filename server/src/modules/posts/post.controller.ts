@@ -75,7 +75,7 @@ export class PostController {
   }
 
   @Delete(':postId')
-  async deletePin(@Request() req, @Param('postId') postId: string) {
+  async deletePostById(@Request() req, @Param('postId') postId: string) {
     return await this.postService.deletePostById({
       userId: req.user.userId,
       postId,
@@ -83,7 +83,7 @@ export class PostController {
   }
 
   @Post(':postId/restore')
-  async restorePin(@Request() req, @Param('postId') postId: string) {
+  async restorePostById(@Request() req, @Param('postId') postId: string) {
     return await this.postService.restorePostById({
       userId: req.user.userId,
       postId,
@@ -92,7 +92,15 @@ export class PostController {
 
   @Post(':postId/save')
   async savePostForUser(@Request() req, @Param('postId') postId: string) {
-    return this.postService.savePostForUser({
+    return this.postService.toggleSavePost({
+      userId: req.user.userId,
+      postId,
+    });
+  }
+
+  @Get(':postId/is-saved')
+  async isPostSaved(@Request() req, @Param('postId') postId: string) {
+    return this.postService.checkIfPostSaved({
       userId: req.user.userId,
       postId,
     });

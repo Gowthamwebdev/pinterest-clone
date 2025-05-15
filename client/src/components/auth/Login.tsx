@@ -8,6 +8,7 @@ import { useUserStore } from '../../stores/userStore/userStore';
 import { useAuthStore } from '../../stores/AuthStore';
 import Cookies from 'js-cookie';
 import { loginSchema } from '../../pages/Validations/loginSchema';
+import { toast } from 'react-hot-toast';
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const LoginForm: React.FC = () => {
   const {
     register,
     formState: { errors },
+    reset,
   } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: { email, password },
@@ -26,19 +28,30 @@ const LoginForm: React.FC = () => {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const data = await userLoginApi({ email, password });
-      setAccessToken(data.token);
-      setIsAuthenticated(true);
-      Cookies.set('token', data.token, { expires: 1 });
-      navigate('/home');
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Invalid email or password',
+      await toast.promise(
+        userLoginApi({ email, password }).then((res) => {
+          console.log('Login response:', res);
+          const data = res;
+          setAccessToken(data.token);
+          setIsAuthenticated(true);
+          Cookies.set('token', data.token, { expires: 1 });
+          reset();
+          navigate('/home');
+          return data;
+        }),
+        {
+          loading: 'Logging in...',
+          success: 'Login successful!',
+          error: (err: Error) => err.message || 'Invalid email or password',
+        },
       );
+    } catch (err) {
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <Box>
       <Typography textAlign="left">
@@ -90,7 +103,7 @@ const LoginForm: React.FC = () => {
           bgcolor: '#fb2c36',
           borderRadius: 100,
         }}
-        onClick={() => handleLogin()}
+        onClick={handleLogin}
       >
         {loading ? 'Logging in...' : 'Login'}
       </Button>
@@ -99,6 +112,3 @@ const LoginForm: React.FC = () => {
 };
 
 export default LoginForm;
-function setError(arg0: string) {
-  throw new Error('Function not implemented.');
-}

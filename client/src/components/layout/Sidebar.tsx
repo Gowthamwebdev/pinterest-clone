@@ -26,13 +26,13 @@ const Sidebar = ({
     }`;
 
   const tooltip = (text: string) => (
-    <span className="absolute left-12 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+    <span className="absolute left-12 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10000">
       {text}
     </span>
   );
 
   return (
-    <div className="w-16 bg-white h-screen flex flex-col items-center justify-between py-4 gap-8 shadow-md sticky top-0">
+    <div className="w-16 bg-white h-screen flex flex-col items-center justify-between py-4 gap-8 shadow-md sticky top-0 z-50">
       <div className="flex flex-col items-center justify-start py-4 gap-8">
         <img src={pinterest} alt="Pinterest Logo" className="w-6 h-6" />
 

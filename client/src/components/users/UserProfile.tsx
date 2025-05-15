@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
-import { fetchUserProfileApi } from '../../api/authApi';
-import { useUserStore } from '../../stores/userStore/userStore';
-import { fetchOtherUserProfile } from '../../api/userApi';
 import { useParams } from 'react-router-dom';
+import { fetchUserProfileApi } from '../../api/authApi';
+import { fetchOtherUserProfile } from '../../api/userApi';
+import { useUserStore } from '../../stores/userStore/userStore';
+import DisplayUserPosts from './DisplayUserPosts';
 
 interface UserProfileProps {
   id?: string;
 }
+
 export const UserProfile: React.FC<UserProfileProps> = () => {
   const { id } = useParams();
   const { name, email, profile_img, setName, setEmail, setProfileImg } =
     useUserStore();
   const [activeTab, setActiveTab] = useState<'created' | 'saved'>('created');
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -19,9 +22,11 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
         const response = id
           ? await fetchOtherUserProfile(id)
           : await fetchUserProfileApi();
+
         setName(response.name);
         setEmail(response.email);
         setProfileImg(response.profile_img);
+        setUserId(response.id);
       } catch (error) {
         console.error('Error fetching user profile:', error);
       }
@@ -31,7 +36,7 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
   }, [id]);
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="w-full mx-auto p-4">
       <div className="flex flex-col items-center mb-8">
         {profile_img ? (
           <img
@@ -52,42 +57,46 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
         <p className="text-gray-500">0 following</p>
 
         <div className="flex gap-4 mt-4">
-          <button className="px-6 py-2 bg-gray-300 rounded-2xl font-semibold cursor-pointer hover:bg-gray-400 transition">
-            Share
-          </button>
-          <button className="px-6 py-2 bg-gray-300 rounded-2xl font-semibold cursor-pointer hover:bg-gray-400 transition">
-            Edit profile
-          </button>
+          {!id ? (
+            <>
+              <button className="px-4 py-3 bg-gray-300 rounded-2xl font-semibold cursor-pointer hover:bg-gray-400 transition">
+                Share
+              </button>
+              <button className="px-4 py-3 bg-gray-300 rounded-2xl font-semibold cursor-pointer hover:bg-gray-400 transition">
+                Edit profile
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="px-4 py-3 bg-gray-300 rounded-2xl font-semibold cursor-pointer hover:bg-gray-400 transition">
+                Message
+              </button>
+              <button className="px-4 py-3 bg-red-500 rounded-2xl font-semibold cursor-pointer text-white hover:bg-red-600 transition">
+                Follow
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       <div className="border-b border-gray-200 mb-6">
         <div className="flex justify-center space-x-8">
           <button
-            className={`py-4 px-1 font-medium text-sm border-b-2 ${activeTab === 'created' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`py-4 px-1 font-medium text-sm border-b-2 cursor-pointer ${activeTab === 'created' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
             onClick={() => setActiveTab('created')}
           >
             Created
           </button>
           <button
-            className={`py-4 px-1 font-medium text-sm border-b-2 ${activeTab === 'saved' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`py-4 px-1 font-medium text-sm border-b-2 cursor-pointer ${activeTab === 'saved' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
             onClick={() => setActiveTab('saved')}
           >
             Saved
           </button>
         </div>
       </div>
-
       <div className="mt-4">
-        {activeTab === 'created' ? (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Your Created Pins</h2>
-          </div>
-        ) : (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Your Saved Pins</h2>
-          </div>
-        )}
+        {userId && <DisplayUserPosts userId={userId} activeTab={activeTab} />}
       </div>
     </div>
   );

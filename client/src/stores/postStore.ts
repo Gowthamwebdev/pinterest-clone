@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { postState } from '../types/postTypes';
 
-export const usePinStore = create<postState>((set) => ({
+export const usePostStore = create<postState>((set) => ({
   id: '',
   image_url: '',
   title: '',

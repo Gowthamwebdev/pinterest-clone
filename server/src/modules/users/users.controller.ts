@@ -18,6 +18,16 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Get(':id/posts/created')
+  async getCreatedPosts(@Param('id') id: string) {
+    return this.userService.getCreatedPosts(id);
+  }
+
+  @Get(':id/posts/saved')
+  async getSavedPosts(@Param('id') id: string) {
+    return this.userService.getSavedPosts(id);
+  }
+
   @Get(':id')
   async getUserById(@Param('id') id: string) {
     return this.userService.findUserById(id);
