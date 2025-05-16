@@ -6,6 +6,7 @@ import {
   UseGuards,
   Body,
   Request,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from './users.service';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
@@ -28,6 +29,14 @@ export class UserController {
     return this.userService.getSavedPosts(id);
   }
 
+  @Delete('tags/:tagId')
+  async deleteUserTag(@Param('tagId') tagId, @Request() req) {
+    return this.userService.deleteUserTag(tagId, req.user.userId);
+  }
+  @Get('tags')
+  async getUserTags(@Request() req) {
+    return this.userService.getUserTags(req.user.userId);
+  }
   @Get(':id')
   async getUserById(@Param('id') id: string) {
     return this.userService.findUserById(id);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextField, Button, Typography, Divider } from '@mui/material';
 import { FiArrowUpCircle } from 'react-icons/fi';
-import { usePostStore } from '../../stores/postStore';
+import { usePostStore } from '../../stores/PostStore';
 
 interface AddPostFormProps {
   imagePreview: string | null;

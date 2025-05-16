@@ -1,61 +1,49 @@
+import { lazy, Suspense } from 'react';
 import { Route, Routes, Navigate, Outlet } from 'react-router-dom';
-import CreatePost from '../pages/CreatePost';
-import Explore from '../pages/Explore';
-import Home from '../pages/Home';
-import Settings from '../pages/Settings';
-import ResetPasswordForm from '../components/form/ResetPasswordForm';
-import LandingPage from '../pages/LandingPage';
-import Layout from '../components/layout/Layout';
 import { useAuth } from '../hooks/useAuth';
-import { useAuthStore } from '../stores/AuthStore';
-import { useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
-import DisplayPosts from '../components/home/DisplayPosts';
-import FetchSinglePost from '../components/home/FetchSinglePost';
-import { UserProfile } from '../components/users/UserProfile';
-import SearchResults from '../components/SearchResults';
-import { CircularProgress } from '@mui/material';
+import Layout from '../components/layout/Layout';
+import SpinningLoader from '../components/ui/loader/SpinningLoader';
+
+const LandingPage = lazy(() => import('../pages/LandingPage'));
+const ResetPasswordForm = lazy(() => import('../components/form/ResetPasswordForm'));
+const Home = lazy(() => import('../pages/Home'));
+const DisplayPosts = lazy(() => import('../components/home/DisplayPosts'));
+const FetchSinglePost = lazy(() => import('../components/home/FetchSinglePost'));
+const Explore = lazy(() => import('../pages/Explore'));
+const CreatePost = lazy(() => import('../pages/CreatePost'));
+const UserProfile = lazy(() => import('../pages/UserProfile'));
+const SearchResults = lazy(() => import('../components/SearchResults'));
+const Settings = lazy(() => import('../pages/Settings'));
+const EditProfile = lazy(() => import('../components/settings/profile/EditProfile'));
+const HomeFeedTuner = lazy(() => import('../pages/HomeFeedTuner'));
 
 const AppRoutes = () => {
   const token = useAuth();
-  const { setIsAuthenticated, setAccessToken, isAuthenticated } =
-    useAuthStore();
-  const [authChecker, setAuthChecker] = useState(false);
-  useEffect(() => {
-    const token = Cookies.get('token');
 
-    if (token) {
-      setIsAuthenticated(true);
-      setAccessToken(token);
-    }
-    setAuthChecker(true);
-  }, [setIsAuthenticated, setAccessToken]);
   const ProtectedRoute = () => {
-    if (!authChecker) {
-      return <CircularProgress />;
+    if (token) {
+      return (
+      <Layout>
+        <Suspense fallback={<SpinningLoader />}>
+          <Outlet />
+        </Suspense>
+      </Layout>
+    );
     }
-    if (!isAuthenticated || !token) {
       return (
         <Navigate to="/" replace state={{ from: window.location.pathname }} />
       );
-    }
-    return (
-      <Layout>
-        <Outlet />
-      </Layout>
-    );
-    // return <Outlet/>
   };
 
   const PublicRoute = () => {
-    if (!authChecker) {
-      return <CircularProgress />;
-    }
-    if (isAuthenticated && token) {
+    if (token) {
       return <Navigate to="/home" replace />;
     }
-    // return <Layout><Outlet /></Layout>;
-    return <Outlet />;
+    return (
+      <Suspense fallback={<SpinningLoader />}>
+        <Outlet />
+      </Suspense>
+    );
   };
 
   return (
@@ -69,14 +57,23 @@ const AppRoutes = () => {
         <Route path="/home" element={<Home />}>
           <Route index element={<DisplayPosts />} />
         </Route>
-        <Route path="/search" element={<SearchResults />} />
-        <Route path="/post/:id" element={<FetchSinglePost />} />
+
+        <Route path="post/:id" element={<FetchSinglePost />} />
+
         <Route path="/today" element={<Explore />} />
-        <Route path="/settings" element={<Settings />} />
         <Route path="/pin-creation-tool" element={<CreatePost />} />
-        <Route path="/messages" element={<Home />} />
-        <Route path="/profile/:id" element={<UserProfile />} />
+        <Route path="/search" element={<SearchResults />} />
+
         <Route path="/profile" element={<UserProfile />} />
+        <Route path="/profile/:id" element={<UserProfile />} />
+
+        <Route path="/settings" element={<Settings />}>
+          <Route index element={<EditProfile />} />
+          <Route path="edit-profile" element={<EditProfile />} />
+          <Route path="home-feed" element={<HomeFeedTuner />} />
+        </Route>
+
+        <Route path="/messages" element={<Home />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Route>
     </Routes>

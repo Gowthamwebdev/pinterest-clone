@@ -5,13 +5,13 @@ export const useUserStore = create<userState>((set) => ({
   userId: '',
   name: '',
   email: '',
-  profileImg: '',
+  profile_img: '',
   password: '',
 
   setUserId: (userId: string) => set({ userId }),
   setName: (name: string) => set({ name }),
   setEmail: (email: string) => set({ email }),
-  setProfileImg: (profileImg: string) => set({ profileImg }),
+  setProfileImg: (profile_img: string) => set({ profile_img }),
   setPassword: (password: string) => set({ password }),
 
   resetUser: () =>
@@ -19,7 +19,7 @@ export const useUserStore = create<userState>((set) => ({
       userId: '',
       name: '',
       email: '',
-      profileImg: '',
+      profile_img: '',
       password: '',
     }),
 }));

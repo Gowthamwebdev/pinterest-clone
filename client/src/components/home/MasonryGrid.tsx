@@ -6,6 +6,7 @@ import { MoreHoriz } from '@mui/icons-material';
 import { FiShare } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { handleDownload, handleNavigate } from '../../utils/functions';
+import { useUiStore } from '../../stores/UiStore';
 
 interface MasonryGridProps {
   posts: postState[];
@@ -14,6 +15,7 @@ interface MasonryGridProps {
 const MasonryGrid: React.FC<MasonryGridProps> = ({ posts }) => {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { ownProfile } = useUiStore();
 
   const handleMoreClick = (e: React.MouseEvent, postId: string) => {
     e.stopPropagation();
@@ -55,6 +57,13 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({ posts }) => {
               <button className="bg-red-600 hover:bg-red-700 text-white rounded-full px-4 py-2 text-sm font-medium flex items-center gap-1 transition-colors">
                 Save
               </button>
+            </div>
+            <div className="flex justify-end items-end">
+              {ownProfile && (
+                <button className="bg-orange-500 hover:bg-red-700 text-white rounded-full px-4 py-2 text-sm font-medium flex items-center gap-1 transition-colors">
+                  delete
+                </button>
+              )}
             </div>
 
             <div className="flex justify-end items-end gap-2 relative">

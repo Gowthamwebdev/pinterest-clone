@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import Notifications from '../ui/Notifications';
-import SidebarOptions from './SidebarOptions';
+import SidebarOptions from '../ui/SidebarOptions';
 import { useUiStore } from '../../stores/UiStore';
 
 interface LayoutProps {

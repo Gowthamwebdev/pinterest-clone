@@ -7,7 +7,7 @@ import { userLoginApi } from '../../api/authApi';
 import { useUserStore } from '../../stores/userStore/userStore';
 import { useAuthStore } from '../../stores/AuthStore';
 import Cookies from 'js-cookie';
-import { loginSchema } from '../../pages/Validations/loginSchema';
+import { loginSchema } from '../../Validations/loginSchema';
 import { toast } from 'react-hot-toast';
 
 const LoginForm: React.FC = () => {

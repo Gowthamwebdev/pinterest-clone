@@ -127,6 +127,7 @@ export class UserService {
                 select: {
                   id: true,
                   title: true,
+                  description: true,
                   image_url: true,
                   pin_tags: {
                     select: {
@@ -150,7 +151,7 @@ export class UserService {
         throw new HttpException(`User not found`, HttpStatus.NOT_FOUND);
       }
 
-      return user.saved_pins;
+      return user.saved_pins.map((saved) => saved.pin);
     } catch (error) {
       throw new HttpException(
         error?.message || 'Unexpected error occurred',
@@ -199,6 +200,82 @@ export class UserService {
       throw new HttpException(
         error.message || 'Unexpected error occurred',
         HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async getUserTags(userId: string) {
+    try {
+      const userTags = await this.prisma.user_tags.findMany({
+        where: {
+          user_id: userId,
+        },
+        include: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+              pin_tags: {
+                select: {
+                  pin: {
+                    select: {
+                      image_url: true,
+                    },
+                  },
+                },
+                take: 1,
+                orderBy: {
+                  pin: {
+                    created_at: 'desc',
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      if (!userTags) {
+        throw new HttpException('no tags found', HttpStatus.NOT_FOUND);
+      }
+      return userTags;
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Unexpected error occurred',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async deleteUserTag(tagId: string, userId: string): Promise<void> {
+    try {
+      const userTag = await this.prisma.user_tags.findUnique({
+        where: {
+          user_id_tag_id: {
+            tag_id: tagId,
+            user_id: userId,
+          },
+        },
+      });
+
+      if (!userTag) {
+        throw new HttpException(
+          'Tag not found or does not belong to user',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      await this.prisma.user_tags.delete({
+        where: {
+          user_id_tag_id: {
+            tag_id: tagId,
+            user_id: userId,
+          },
+        },
+      });
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to delete tag',
+        error.status || HttpStatus.BAD_REQUEST,
       );
     }
   }
