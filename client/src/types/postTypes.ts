@@ -1,14 +1,14 @@
-export type postState = {
+export type postType = {
   id: string;
   image_url: string;
   title: string;
   description: string;
   tags: string;
   board: string;
+};
 
-  setImgUrl: (imgUrl: string) => void;
-  setTitle: (title: string) => void;
-  setDescription: (description: string) => void;
-  setTags: (tags: string) => void;
-  setBoard: (board: string) => void;
+export type postState = {
+  post: postType;
+  setPost: (post: Partial<postType>) => void;
+  reset: () => void;
 };

@@ -1,14 +1,10 @@
 export type authType = {
-    isAuthenticated: boolean,
-    accessToken: string,
-}
+  isAuthenticated: boolean;
+  accessToken: string;
+};
 
 export type authState = {
-  isAuthenticated: boolean,
-  accessToken: string,
-
-    setIsAuthenticated: (isAuthenticated: boolean) => void;
-    setAccessToken: (accessToken: string) => void;
-
+  auth: authType;
+  setAuth: (auth: Partial<authType>) => void;
   resetAuth: () => void;
-}
+};

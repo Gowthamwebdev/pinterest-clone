@@ -31,7 +31,7 @@ export const userLoginApi = async ({ email, password }: loginType) => {
   }
 };
 
-export const fetchUserProfileApi = async () => {
+export const fetchUserProfile = async () => {
   try {
     const response = await apiClient.get('/auth/profile');
     return response.data;
@@ -53,7 +53,7 @@ export const userSignupApi = async (userData: signupType) => {
   }
 };
 
-export const resetPasswordApi = async (email: string, newPassword: string) => {
+export const resetPassword = async (email: string, newPassword: string) => {
   try {
     const response = await apiClient.post('/auth/reset-password', {
       email,

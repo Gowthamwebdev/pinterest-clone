@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { postState } from '../../types/postTypes';
 import { fetchUserCreatedOrSavedPosts } from '../../api/userApi';
 import MasonryGrid from '../home/MasonryGrid';
@@ -11,28 +11,31 @@ interface UserPinsProps {
 
 const DisplayUserPosts = ({ userId, activeTab }: UserPinsProps) => {
   const [posts, setPosts] = useState<postState[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPins = async () => {
-      setIsLoading(true);
+    startTransition(async () => {
       try {
         const data = await fetchUserCreatedOrSavedPosts(userId, activeTab);
         setPosts(data);
-      } catch (error) {
-        console.error(`Error fetching ${activeTab} pins:`, error);
+        setError(null);
+      } catch (err) {
+        console.error(`Error fetching ${activeTab} pins:`, err);
         setPosts([]);
-      } finally {
-        setIsLoading(false);
+        setError('Failed to load posts');
       }
-    };
-    fetchPins();
+    });
   }, [activeTab, userId]);
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
 
   return (
     <div className="w-full h-full">
-      {isLoading ? (
-        <div className="flex items-center justify-center">
+      {isPending ? (
+        <div className="flex items-center justify-center h-full">
           <CircularProgress />
         </div>
       ) : (

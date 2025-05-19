@@ -1,17 +1,18 @@
-import { useEffect } from "react";
-import Cookies from "js-cookie";
-import { useAuthStore } from "../stores/AuthStore";
+import { useEffect } from 'react';
+import Cookies from 'js-cookie';
+import { useAuthStore } from '../stores/AuthStore';
 
 export const useAuth = () => {
-  const { setAccessToken, setIsAuthenticated } = useAuthStore();
-  const token = Cookies.get("token");
+  const { setAuth } = useAuthStore();
+  const token = Cookies.get('token');
 
   useEffect(() => {
     if (token) {
-      setAccessToken(token);
-      setIsAuthenticated(true);
+      setAuth({
+        accessToken: token,
+        isAuthenticated: true,
+      });
     }
-  }, [token, setAccessToken, setIsAuthenticated]);
-
+  }, [setAuth, token]);
   return token;
 };

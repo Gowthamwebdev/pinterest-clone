@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import DisplayUserProfile from '../components/users/DisplayUserProfile';
 import { fetchOtherUserProfile } from '../api/userApi';
-import { fetchUserProfileApi } from '../api/authApi';
+import { fetchUserProfile } from '../api/authApi';
 
 const UserProfile = () => {
   const { id } = useParams();
@@ -18,7 +18,7 @@ const UserProfile = () => {
       try {
         const response = id
           ? await fetchOtherUserProfile(id)
-          : await fetchUserProfileApi();
+          : await fetchUserProfile();
         setUserData({
           id: response.id,
           name: response.name,

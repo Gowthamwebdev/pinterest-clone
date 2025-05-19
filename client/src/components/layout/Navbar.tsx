@@ -15,7 +15,7 @@ import { useUiStore } from '../../stores/UiStore';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { auth } = useAuthStore();
   const { setOpenModal } = useUiStore();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -72,7 +72,7 @@ const Navbar: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-4">
-        {isAuthenticated ? (
+        {auth.isAuthenticated ? (
           <>
             <IconButton onClick={handleAvatarClick} size="small" sx={{ ml: 2 }}>
               <Avatar alt="User Avatar" src="/path-to-avatar.jpg" />

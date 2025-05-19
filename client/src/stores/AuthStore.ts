@@ -3,23 +3,30 @@ import Cookies from 'js-cookie';
 import { authState } from '../types/authTypes';
 
 export const useAuthStore = create<authState>((set) => ({
-  isAuthenticated: false,
-  accessToken: '',
+  auth: {
+    isAuthenticated: false,
+    accessToken: '',
+  },
 
-  setIsAuthenticated: (isAuthenticated: boolean) => set({ isAuthenticated }),
-  setAccessToken: (accessToken: string) => set({ accessToken }),
+  setAuth: (partialAuth) => {
+    set((state) => ({ auth: { ...state.auth, ...partialAuth } }));
+  },
 
   logout: () => {
     Cookies.remove('token');
     set({
-      isAuthenticated: false,
-      accessToken: '',
+      auth: {
+        isAuthenticated: false,
+        accessToken: '',
+      },
     });
   },
 
   resetAuth: () =>
     set({
-      isAuthenticated: false,
-      accessToken: '',
+      auth: {
+        isAuthenticated: false,
+        accessToken: '',
+      },
     }),
 }));

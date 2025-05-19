@@ -1,75 +1,58 @@
 import React, { useState } from 'react';
 import { Divider, Typography, Button } from '@mui/material';
-import { usePostStore } from '../stores/postStore';
+import { useForm } from 'react-hook-form';
 import AddPostForm from '../components/form/AddPinForm';
 import { createPost } from '../api/postApi';
-import { toast } from 'react-hot-toast';
+import useSnackBar from '../context/SnackBarContext';
+
+type FormValues = {
+  title: string;
+  description: string;
+  tags: string;
+};
 
 const CreatePost: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const showSnackbar = useSnackBar();
+
   const {
-    title,
-    description,
-    tags,
-    board,
-    setImgUrl,
-    setTitle,
-    setDescription,
-    setTags,
-    setBoard,
-  } = usePostStore();
+    control,
+    handleSubmit,
+    reset: resetForm,
+    formState: { isSubmitting },
+  } = useForm<FormValues>();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     if (!file) return;
+
     setImageFile(file);
     const url = URL.createObjectURL(file);
     setImagePreview(url);
-    setImgUrl(url);
   };
 
-  const handlePublish = async () => {
+  const onSubmit = async (data: FormValues) => {
     if (!imageFile) {
-      alert('Please upload an image before publishing.');
+      showSnackbar('Image is required', 'error');
       return;
     }
 
-    const postPayload = {
-      id: '',
-      title,
-      description,
-      tags,
-      board,
-      image: imageFile,
-      image_url: '',
-      setImgUrl,
-      setTitle,
-      setDescription,
-      setTags,
-      setBoard,
-    };
-
     try {
-      await toast.promise(
-        createPost(postPayload).then((res) => res.data),
-        {
-          loading: 'Publishing post...',
-          success: 'Post published successfully!',
-          error: 'Failed to publish post.',
-        },
-      );
+      const formData = new FormData();
+      formData.append('title', data.title);
+      formData.append('description', data.description);
+      formData.append('tags', data.tags);
+      formData.append('image', imageFile);
 
-      setTitle('');
-      setDescription('');
-      setTags('');
-      setBoard('');
-      setImgUrl('');
-      setImageFile(null);
+      await createPost(formData);
+      showSnackbar('Post created successfully!', 'success');
+      resetForm();
       setImagePreview(null);
+      setImageFile(null);
     } catch (err) {
       console.error('Publish failed:', err);
-      alert('Failed to publish post. Try again.');
+      showSnackbar('Failed to publish post', 'error');
     }
   };
 
@@ -82,7 +65,8 @@ const CreatePost: React.FC = () => {
         <Button
           variant="contained"
           color="error"
-          onClick={handlePublish}
+          onClick={handleSubmit(onSubmit)}
+          disabled={!imagePreview || isSubmitting}
           sx={{
             px: 4,
             py: 1.5,
@@ -92,13 +76,15 @@ const CreatePost: React.FC = () => {
             '&:hover': { boxShadow: 'none' },
           }}
         >
-          Publish
+          {isSubmitting ? 'Publishing...' : 'Publish'}
         </Button>
       </div>
       <Divider className="w-full my-4" />
       <AddPostForm
         imagePreview={imagePreview}
         onImageChange={handleImageChange}
+        control={control}
+        disabled={!imagePreview || isSubmitting}
       />
     </div>
   );

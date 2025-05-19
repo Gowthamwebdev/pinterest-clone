@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPostById } from '../../api/postApi';
-import { postState } from '../../types/postTypes';
+import { postType } from '../../types/postTypes';
 import MasonryGrid from './MasonryGrid';
 import DisplayUserInfo from '../users/DisplayUserInfo';
 import PostActions from '../ui/PostActions';
-import { userState } from '../../types/userTypes';
+import { userType } from '../../types/userTypes';
 import { handleDownload } from '../../utils/functions';
 
 const FetchSinglePost = () => {
   const { id } = useParams();
   const [currentPost, setCurrentPost] = useState<
-    (postState & { user: userState }) | null
+    (postType & { user: userType }) | null
   >(null);
-  const [recommendedPosts, setRecommendedPosts] = useState<postState[]>([]);
+  const [recommendedPosts, setRecommendedPosts] = useState<postType[]>([]);
 
   useEffect(() => {
     const getPost = async () => {

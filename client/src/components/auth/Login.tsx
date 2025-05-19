@@ -13,7 +13,7 @@ import { toast } from 'react-hot-toast';
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = React.useState(false);
-  const { setAccessToken, setIsAuthenticated } = useAuthStore();
+  const { setAuth } = useAuthStore();
   const { email, setEmail, password, setPassword } = useUserStore();
 
   const {
@@ -32,8 +32,10 @@ const LoginForm: React.FC = () => {
         userLoginApi({ email, password }).then((res) => {
           console.log('Login response:', res);
           const data = res;
-          setAccessToken(data.token);
-          setIsAuthenticated(true);
+          setAuth({
+            accessToken: data.token,
+            isAuthenticated: true,
+          });
           Cookies.set('token', data.token, { expires: 1 });
           reset();
           navigate('/home');
