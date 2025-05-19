@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { deleteUserTags, fetchUserTags } from '../../../api/userApi';
 import SpinningLoader from '../../ui/loader/SpinningLoader';
 import { CancelRounded } from '@mui/icons-material';
-import { toast } from 'react-hot-toast';
+import useSnackBar from '../../../context/SnackBarContext';
 
 interface Pin {
   image_url: string;
@@ -24,37 +24,31 @@ interface UserTag {
 
 const DisplayHomeFeed = () => {
   const [userTags, setUserTags] = useState<UserTag[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
+  const [isRemoving, setIsRemoving] = useState<Record<string, boolean>>({});
+  const showSnackBar = useSnackBar();
 
   useEffect(() => {
-    const loadUserTags = async () => {
+    startTransition(async () => {
       try {
-        setLoading(true);
         const data = await fetchUserTags();
         setUserTags(data);
-      } catch (err) {
-        console.error('Error fetching tags:', err);
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching tags:', error);
       }
-    };
-    loadUserTags();
+    });
   }, []);
 
   const handleRemoveTag = async (tagId: string) => {
+    setIsRemoving((prev) => ({ ...prev, [tagId]: true }));
     try {
-      await toast.promise(deleteUserTags(tagId), {
-        loading: 'Removing tag...',
-        success: () => {
-          setUserTags((prevTags) =>
-            prevTags.filter((tag) => tag.tag_id !== tagId),
-          );
-          return 'Tag removed!';
-        },
-        error: 'Failed to remove tag.',
-      });
+      const response = await deleteUserTags(tagId);
+      showSnackBar(response, 'success');
+      setUserTags((prevTags) => prevTags.filter((tag) => tag.tag_id !== tagId));
     } catch (error) {
       console.error('Error removing tag:', error);
+    } finally {
+      setIsRemoving((prev) => ({ ...prev, [tagId]: false }));
     }
   };
 
@@ -62,11 +56,11 @@ const DisplayHomeFeed = () => {
     console.log('Tag clicked:', tagId);
   };
 
-  if (loading) {
+  if (isPending && userTags.length === 0) {
     return (
-      <>
+      <div className="flex justify-center items-center h-64">
         <SpinningLoader />
-      </>
+      </div>
     );
   }
 
@@ -102,16 +96,24 @@ const DisplayHomeFeed = () => {
             </div>
 
             <button
-              onClick={() => handleRemoveTag(userTag.tag_id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRemoveTag(userTag.tag_id);
+              }}
               className="absolute top-2 right-2 p-1 bg-white/80 rounded-full hover:bg-white transition-colors cursor-pointer"
               aria-label="Remove tag"
+              disabled={isRemoving[userTag.tag_id]}
             >
-              <CancelRounded
-                style={{
-                  color: 'red',
-                  fontSize: '1.25rem',
-                }}
-              />
+              {isRemoving[userTag.tag_id] ? (
+                <SpinningLoader />
+              ) : (
+                <CancelRounded
+                  style={{
+                    color: 'red',
+                    fontSize: '1.25rem',
+                  }}
+                />
+              )}
             </button>
           </div>
         ))}

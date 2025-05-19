@@ -1,3 +1,4 @@
+import { postType } from '../types/postTypes';
 import apiClient from './apiClient';
 
 export const createPost = async (formData: FormData) => {
@@ -50,6 +51,26 @@ export const checkIfPostIsSaved = async (postId: string) => {
     return response.data;
   } catch (error) {
     console.error('Error checking if post is saved:', error);
+    throw error;
+  }
+};
+
+export const deletePostById = async (postId: string) => {
+  try {
+    const response = await apiClient.delete(`/posts/${postId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    throw error;
+  }
+};
+
+export const editPostById = async (postId: string, postData: postType) => {
+  try {
+    const response = await apiClient.put(`/posts/${postId}`, { postData });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating post:', error);
     throw error;
   }
 };

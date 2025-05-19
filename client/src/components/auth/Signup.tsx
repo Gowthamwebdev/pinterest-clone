@@ -1,46 +1,66 @@
 import { Box, Button, TextField, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useTransition } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userSignupApi } from '../../api/authApi';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { signupSchema } from '../../Validations/signupSchema';
+import useSnackBar from '../../context/SnackBarContext';
 
+interface signUpFormData {
+  email: string;
+  password: string;
+  dateOfBirth: string;
+}
 const SignUpForm: React.FC = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [isPending, startTransition] = useTransition();
+  const showSnackBar = useSnackBar();
 
-  const handleSignup = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      console.log('email', email);
-      console.log('pass', password);
-      console.log('Birthdate', dateOfBirth);
-
-      const response = await userSignupApi({ email, password, dateOfBirth });
-      console.log('Signup Successful:', response.message);
-      setError(response.message);
-      navigate('/');
-    } catch (err) {
-      console.error(err.message);
-      setError(err.message || 'Signup failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<signUpFormData>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: { email: '', password: '', dateOfBirth: '' },
+  });
+  const handleSignup = async (data: signUpFormData): Promise<void> => {
+    startTransition(async () => {
+      try {
+        console.log(data.email);
+        const response = await userSignupApi({
+          email: data.email,
+          password: data.password,
+          dateOfBirth: data.dateOfBirth,
+        });
+        reset();
+        showSnackBar('signup successful!', 'success');
+        console.log('Signup Successful:', response.message);
+        navigate('/');
+      } catch (err) {
+        if (err instanceof Error) {
+          console.error(err.message);
+        } else {
+          console.error(err);
+        }
+      }
+    });
   };
 
   return (
-    <Box>
+    <Box component="form" onSubmit={handleSubmit(handleSignup)}>
       <Typography textAlign="left">
         <h1>Email</h1>
         <TextField
           placeholder="Email"
           fullWidth
           margin="normal"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          {...register('email')}
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          required
         />
       </Typography>
 
@@ -51,8 +71,10 @@ const SignUpForm: React.FC = () => {
           fullWidth
           margin="normal"
           type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          {...register('password')}
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          required
         />
       </Typography>
 
@@ -67,30 +89,26 @@ const SignUpForm: React.FC = () => {
               shrink: true,
             },
           }}
-          value={dateOfBirth}
-          onChange={(e) => setDateOfBirth(e.target.value)}
+          {...register('dateOfBirth')}
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          required
         />
       </Typography>
-
-      {error && (
-        <Typography color="error" textAlign="left">
-          {error}
-        </Typography>
-      )}
 
       <Button
         fullWidth
         variant="contained"
         color="primary"
-        disabled={loading}
+        disabled={isPending}
+        type="submit"
         sx={{
           mt: 2,
           bgcolor: '#fb2c36',
           borderRadius: 300,
         }}
-        onClick={handleSignup}
       >
-        {loading ? 'Signing up...' : 'SignUp'}
+        {isPending ? 'Signing up...' : 'SignUp'}
       </Button>
     </Box>
   );

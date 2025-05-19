@@ -246,7 +246,7 @@ export class UserService {
     }
   }
 
-  async deleteUserTag(tagId: string, userId: string): Promise<void> {
+  async deleteUserTag(tagId: string, userId: string) {
     try {
       const userTag = await this.prisma.user_tags.findUnique({
         where: {
@@ -272,6 +272,7 @@ export class UserService {
           },
         },
       });
+      return 'Tag removed successfully';
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to delete tag',

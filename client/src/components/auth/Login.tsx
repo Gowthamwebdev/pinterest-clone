@@ -1,61 +1,53 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Button, TextField, Typography } from '@mui/material';
-import React from 'react';
+import React, { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { userLoginApi } from '../../api/authApi';
-import { useUserStore } from '../../stores/userStore/userStore';
 import { useAuthStore } from '../../stores/AuthStore';
 import Cookies from 'js-cookie';
 import { loginSchema } from '../../Validations/loginSchema';
-import { toast } from 'react-hot-toast';
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = React.useState(false);
+  const [isPending, startTransition] = useTransition();
   const { setAuth } = useAuthStore();
-  const { email, setEmail, password, setPassword } = useUserStore();
 
   const {
     register,
+    handleSubmit,
     formState: { errors },
     reset,
-  } = useForm({
+  } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email, password },
+    defaultValues: { email: '', password: '' },
   });
 
-  const handleLogin = async () => {
-    setLoading(true);
-    try {
-      await toast.promise(
-        userLoginApi({ email, password }).then((res) => {
-          console.log('Login response:', res);
-          const data = res;
-          setAuth({
-            accessToken: data.token,
-            isAuthenticated: true,
-          });
-          Cookies.set('token', data.token, { expires: 1 });
-          reset();
-          navigate('/home');
-          return data;
-        }),
-        {
-          loading: 'Logging in...',
-          success: 'Login successful!',
-          error: (err: Error) => err.message || 'Invalid email or password',
-        },
-      );
-    } catch (err) {
-      console.error('Login error:', err);
-    } finally {
-      setLoading(false);
-    }
+  const handleLogin = async (data: LoginFormData): Promise<void> => {
+    startTransition(async () => {
+      try {
+        const response = await userLoginApi({
+          email: data.email,
+          password: data.password,
+        });
+        setAuth({
+          isAuthenticated: true,
+        });
+        Cookies.set('token', response.token, { expires: 1 });
+        reset();
+        navigate('/home');
+      } catch (err) {
+        console.error('Login error:', err);
+      }
+    });
   };
 
   return (
-    <Box>
+    <Box component="form" onSubmit={handleSubmit(handleLogin)}>
       <Typography textAlign="left">
         <h1>Email</h1>
         <TextField
@@ -65,8 +57,6 @@ const LoginForm: React.FC = () => {
           {...register('email')}
           error={!!errors.email}
           helperText={errors.email?.message}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
           required
         />
       </Typography>
@@ -81,33 +71,36 @@ const LoginForm: React.FC = () => {
           error={!!errors.password}
           helperText={errors.password?.message}
           type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          required
         />
       </Typography>
 
       <Link
-        to="password/reset"
+        to="/password/reset"
         className="text-black normal-case hover:underline"
       >
-        <h1 className="text-sm text-black hover:underline flex justify-start">
+        <Typography
+          variant="body2"
+          className="hover:underline"
+          textAlign="left"
+        >
           Forgot your password?
-        </h1>
+        </Typography>
       </Link>
 
       <Button
         fullWidth
         variant="contained"
         color="primary"
-        disabled={loading}
+        type="submit"
+        disabled={isPending}
         sx={{
           mt: 2,
           bgcolor: '#fb2c36',
           borderRadius: 100,
         }}
-        onClick={handleLogin}
       >
-        {loading ? 'Logging in...' : 'Login'}
+        {isPending ? 'Logging in...' : 'Login'}
       </Button>
     </Box>
   );

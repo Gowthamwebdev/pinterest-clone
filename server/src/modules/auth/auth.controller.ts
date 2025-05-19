@@ -38,7 +38,7 @@ export class AuthController {
   }
 
   @Public()
-  @Post('forgot-password')
+  @Post('forget-password')
   async forgotPassword(@Body('email') email: string) {
     await this.mailerService.sendPasswordResetEmail(email);
     return { message: 'A reset email has been sent to your mail address' };

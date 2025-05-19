@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPostById } from '../../api/postApi';
 import { postType } from '../../types/postTypes';
@@ -7,26 +7,34 @@ import DisplayUserInfo from '../users/DisplayUserInfo';
 import PostActions from '../ui/PostActions';
 import { userType } from '../../types/userTypes';
 import { handleDownload } from '../../utils/functions';
+import SpinningLoader from '../ui/loader/SpinningLoader';
 
 const FetchSinglePost = () => {
   const { id } = useParams();
   const [currentPost, setCurrentPost] = useState<
-    (postType & { user: userType }) | null
+    (postType & { user: userType & { id: string } }) | null
   >(null);
   const [recommendedPosts, setRecommendedPosts] = useState<postType[]>([]);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     const getPost = async () => {
       try {
-        const data = await getPostById(id as string);
-        setCurrentPost(data.currentPin);
-        setRecommendedPosts(data.recommendedPins || []);
+        startTransition(async () => {
+          const data = await getPostById(id as string);
+          setCurrentPost(data.currentPin);
+          setRecommendedPosts(data.recommendedPins || []);
+        });
       } catch (error) {
         console.error('Error fetching post:', error);
       }
     };
     getPost();
   }, [id]);
+
+  if (isPending) {
+    return <SpinningLoader />;
+  }
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-50">
@@ -63,7 +71,7 @@ const FetchSinglePost = () => {
         )}
       </div>
       <div className="w-full mt-8">
-        <MasonryGrid posts={recommendedPosts} />
+        <MasonryGrid posts={recommendedPosts} isOwnProfile={false} />
       </div>
     </div>
   );

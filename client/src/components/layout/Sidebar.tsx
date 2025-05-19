@@ -65,10 +65,10 @@ const Sidebar = ({
           </span>
         </div>
 
-        <Link to="/messages" className={iconClasses('/messages')}>
+        <div className={iconClasses('/messages')}>
           <FiMessageSquare size={20} />
           {tooltip('Messages')}
-        </Link>
+        </div>
       </div>
 
       <div className="mb-4 text-center">

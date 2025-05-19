@@ -8,18 +8,8 @@ export type userType = {
 };
 
 export type userState = {
-  userId: string;
-  name: string;
-  email: string;
-  password: string;
-  profile_img: string;
-
-  setUserId: (userId: string) => void;
-  setName: (name: string) => void;
-  setEmail: (email: string) => void;
-  setPassword: (password: string) => void;
-  setProfileImg: (profile_img: string) => void;
-
+  user: userType;
+  setUser: (user: Partial<userType>) => void;
   resetUser: () => void;
 };
 

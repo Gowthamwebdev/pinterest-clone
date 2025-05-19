@@ -23,8 +23,8 @@ export class AuthService {
       return user;
     } catch (error) {
       throw new HttpException(
-        'Unexpected error occured: ',
-        HttpStatus.BAD_REQUEST,
+        error.message || 'Unexpected error occurred',
+        error.HttpStatus || HttpStatus.BAD_REQUEST,
       );
     }
   }
@@ -46,8 +46,8 @@ export class AuthService {
       };
     } catch (error) {
       throw new HttpException(
-        'Unexpected error occured: ',
-        HttpStatus.BAD_REQUEST,
+        error.message || 'Unexpected error occurred',
+        error.HttpStatus || HttpStatus.BAD_REQUEST,
       );
     }
   }
@@ -71,8 +71,8 @@ export class AuthService {
       return user;
     } catch (error) {
       throw new HttpException(
-        'Unexpected error occured: ',
-        HttpStatus.BAD_REQUEST,
+        error.message || 'Unexpected error occurred',
+        error.HttpStatus || HttpStatus.BAD_REQUEST,
       );
     }
   }
@@ -105,8 +105,8 @@ export class AuthService {
       };
     } catch (error) {
       throw new HttpException(
-        'Unexpected error occurred',
-        HttpStatus.BAD_REQUEST,
+        error.message || 'Unexpected error occurred',
+        error.HttpStatus || HttpStatus.BAD_REQUEST,
       );
     }
   }

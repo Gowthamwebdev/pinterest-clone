@@ -53,6 +53,17 @@ export const userSignupApi = async (userData: signupType) => {
   }
 };
 
+export const forgetPassword = async (email: string) => {
+  try {
+    const response = await apiClient.post('auth/forget-password', {
+      email,
+    });
+    return response.data;
+  } catch (error: unknown) {
+    throw handleApiError(error);
+  }
+};
+
 export const resetPassword = async (email: string, newPassword: string) => {
   try {
     const response = await apiClient.post('/auth/reset-password', {

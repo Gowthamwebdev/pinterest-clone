@@ -1,5 +1,5 @@
 import { useEffect, useState, useTransition } from 'react';
-import { postState } from '../../types/postTypes';
+import { postType } from '../../types/postTypes';
 import { fetchUserCreatedOrSavedPosts } from '../../api/userApi';
 import MasonryGrid from '../home/MasonryGrid';
 import { CircularProgress } from '@mui/material';
@@ -7,10 +7,15 @@ import { CircularProgress } from '@mui/material';
 interface UserPinsProps {
   userId: string;
   activeTab: 'created' | 'saved';
+  isOwnProfile: boolean;
 }
 
-const DisplayUserPosts = ({ userId, activeTab }: UserPinsProps) => {
-  const [posts, setPosts] = useState<postState[]>([]);
+const DisplayUserPosts = ({
+  userId,
+  activeTab,
+  isOwnProfile,
+}: UserPinsProps) => {
+  const [posts, setPosts] = useState<postType[]>([]);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +44,7 @@ const DisplayUserPosts = ({ userId, activeTab }: UserPinsProps) => {
           <CircularProgress />
         </div>
       ) : (
-        <MasonryGrid posts={posts} />
+        <MasonryGrid posts={posts} isOwnProfile={isOwnProfile} />
       )}
     </div>
   );

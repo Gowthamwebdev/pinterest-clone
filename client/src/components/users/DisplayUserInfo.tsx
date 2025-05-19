@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { postState } from '../../types/postTypes';
-import { userState } from '../../types/userTypes';
+import { postType } from '../../types/postTypes';
+import { userType } from '../../types/userTypes';
 
 interface PostUserProps {
-  post: postState & {
-    user: userState;
+  post: postType & {
+    user: userType & { id: string };
   };
 }
 const DisplayUserInfo = ({ post }: PostUserProps) => {

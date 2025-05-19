@@ -1,38 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { getPosts } from '../../api/postApi';
-import { postState } from '../../types/postTypes';
+import { postType } from '../../types/postTypes';
 import MasonryGrid from './MasonryGrid';
 import { MasonryLoader } from '../ui/loader/CardLoader';
 
 const DisplayPosts: React.FC = () => {
-  const [posts, setPosts] = useState<postState[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [posts, setPosts] = useState<postType[]>([]);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        setIsLoading(true);
-        const response = await getPosts();
-
-        const allPosts = [
-          ...(response.preferredPosts || []),
-          ...(response.remainingPosts || []),
-        ];
-        setPosts(allPosts);
+        startTransition(async () => {
+          const response = await getPosts();
+          const allPosts = [
+            ...(response.preferredPosts || []),
+            ...(response.remainingPosts || []),
+          ];
+          setPosts(allPosts);
+        });
       } catch (err) {
         console.error('Fetch posts error:', err);
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchPosts();
   }, []);
 
-  return isLoading ? (
+  return isPending ? (
     <MasonryLoader count={12} />
   ) : (
-    <MasonryGrid posts={posts} />
+    <MasonryGrid posts={posts} isOwnProfile={false} />
   );
 };
 

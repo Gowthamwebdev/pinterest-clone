@@ -15,7 +15,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, defaultType }) => {
   const [isLogin, setIsLogin] = useState(defaultType === 'login');
 
   return (
-    <div className="fixed inset-0 backdrop-blur-md bg-white/30 flex items-center justify-center">
+    <div className="fixed inset-0 backdrop-blur-md bg-white/30 flex items-center justify-center z-1000">
       <div className="bg-white p-6 rounded-lg shadow-lg">
         <motion.div
           initial={{ opacity: 0 }}

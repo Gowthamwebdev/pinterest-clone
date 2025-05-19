@@ -87,14 +87,13 @@ const Navbar: React.FC = () => {
               PaperProps={{
                 style: {
                   boxShadow: '0 4px 4px rgba(0, 0, 0, 0.1)',
+                  width: 200,
+                  height: 100,
                 },
               }}
             >
               <MenuItem onClick={() => handleNavigation('profile')}>
                 Profile
-              </MenuItem>
-              <MenuItem onClick={() => handleNavigation('account')}>
-                My Account
               </MenuItem>
               <MenuItem onClick={handleMenuClose}>
                 <LogoutForm />

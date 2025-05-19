@@ -2,43 +2,45 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DisplayUserPosts from './DisplayUserPosts';
 import { handleNavigate } from '../../utils/functions';
+import { useUserStore } from '../../stores/userStore/userStore';
 
 interface UserProps {
-  userData: {
-    id: string;
-    name: string;
-    email: string;
-    profile_img: string;
-  };
+  // userData: {
+  //   id: string;
+  //   name: string;
+  //   email: string;
+  //   profile_img: string;
+  // };
   isOwnProfile: boolean;
 }
 
 const DisplayUserProfile: React.FC<UserProps> = ({
-  userData,
+  // userData,
   isOwnProfile,
 }) => {
   const [activeTab, setActiveTab] = useState<'created' | 'saved'>('created');
   const navigate = useNavigate();
+  const { user } = useUserStore();
 
   return (
     <div className="w-full mx-auto p-4">
       <div className="flex flex-col items-center mb-8">
-        {userData.profile_img ? (
+        {user.profile_img ? (
           <img
-            src={userData.profile_img}
+            src={user.profile_img}
             alt="Profile"
             className="rounded-full w-24 h-24 mb-4 object-cover"
           />
         ) : (
           <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mb-4">
             <span className="text-gray-600 text-3xl font-medium">
-              {userData.name.charAt(0).toUpperCase()}
+              {user.name.charAt(0).toUpperCase()}
             </span>
           </div>
         )}
 
-        <h1 className="text-2xl font-bold">{userData.name}</h1>
-        <p className="text-gray-500">{userData.email}</p>
+        <h1 className="text-2xl font-bold">{user.name}</h1>
+        <p className="text-gray-500">{user.email}</p>
         <p className="text-gray-500">0 following</p>
 
         <div className="flex gap-4 mt-4">
@@ -95,8 +97,12 @@ const DisplayUserProfile: React.FC<UserProps> = ({
       </div>
 
       <div className="mt-4">
-        {userData.id && (
-          <DisplayUserPosts userId={userData.id} activeTab={activeTab} />
+        {user.userId && (
+          <DisplayUserPosts
+            userId={user.userId}
+            activeTab={activeTab}
+            isOwnProfile={isOwnProfile}
+          />
         )}
       </div>
     </div>

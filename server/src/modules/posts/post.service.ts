@@ -133,6 +133,7 @@ export class PostService {
       const tagIds = userWithTags.map((ut) => ut.tag_id);
       const preferredPosts = await this.prisma.pin.findMany({
         where: {
+          is_deleted: false,
           pin_tags: {
             some: {
               tag_id: { in: tagIds },
@@ -165,6 +166,7 @@ export class PostService {
 
       const remainingPosts = await this.prisma.pin.findMany({
         where: {
+          is_deleted: false,
           NOT: {
             pin_tags: {
               some: {

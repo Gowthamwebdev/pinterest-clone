@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import Navbar from '../components/layout/LandingNav';
 import AuthModal from '../components/auth/AuthModal';
+// import LandingPageHome from '../components/landing-page/LandingPageHome';
+import LandingPageSearch from '../components/landing-page/LandingPageSearch';
 
 const LandingPage = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -18,10 +20,10 @@ const LandingPage = () => {
           setOpenModal(true);
         }}
       />
-
-      <div className="flex-1 flex items-center justify-center text-3xl font-bold text-gray-600">
-        Welcome to Our Pinterest ✨
-      </div>
+      <>
+        {/* <LandingPageHome /> */}
+        <LandingPageSearch />
+      </>
 
       {openModal && (
         <AuthModal onClose={() => setOpenModal(false)} defaultType={authType} />

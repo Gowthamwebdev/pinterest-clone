@@ -1,21 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import Masonry from '@mui/lab/Masonry';
-import { postState } from '../../types/postTypes';
-import { IconButton } from '@mui/material';
+import { postType } from '../../types/postTypes';
+import { IconButton, CircularProgress } from '@mui/material';
 import { MoreHoriz } from '@mui/icons-material';
 import { FiShare } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { handleDownload, handleNavigate } from '../../utils/functions';
-import { useUiStore } from '../../stores/UiStore';
+import { deletePostById } from '../../api/postApi';
+import useSnackBar from '../../context/SnackBarContext';
 
 interface MasonryGridProps {
-  posts: postState[];
+  posts: postType[];
+  isOwnProfile: boolean;
+  onPostDeleted?: (postId: string) => void;
 }
 
-const MasonryGrid: React.FC<MasonryGridProps> = ({ posts }) => {
+const MasonryGrid: React.FC<MasonryGridProps> = ({
+  posts,
+  isOwnProfile,
+  onPostDeleted,
+}) => {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const navigate = useNavigate();
-  const { ownProfile } = useUiStore();
+  const showSnackbar = useSnackBar();
 
   const handleMoreClick = (e: React.MouseEvent, postId: string) => {
     e.stopPropagation();
@@ -32,6 +40,25 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({ posts }) => {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, [activeMenuId]);
+
+  const handlePostAction = (postId: string, action: 'delete' | 'edit') => {
+    startTransition(async () => {
+      try {
+        if (action === 'delete') {
+          await deletePostById(postId);
+          showSnackbar('Post deleted successfully', 'success');
+          onPostDeleted?.(postId);
+        } else {
+          navigate(`/edit-post/${postId}`);
+        }
+      } catch (error) {
+        console.error(`Error ${action}ing post:`, error);
+        showSnackbar(`Failed to ${action} post`, 'error');
+      } finally {
+        setActiveMenuId(null);
+      }
+    });
+  };
 
   return (
     <Masonry
@@ -58,13 +85,6 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({ posts }) => {
                 Save
               </button>
             </div>
-            <div className="flex justify-end items-end">
-              {ownProfile && (
-                <button className="bg-orange-500 hover:bg-red-700 text-white rounded-full px-4 py-2 text-sm font-medium flex items-center gap-1 transition-colors">
-                  delete
-                </button>
-              )}
-            </div>
 
             <div className="flex justify-end items-end gap-2 relative">
               <IconButton className="!bg-white">
@@ -72,15 +92,17 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({ posts }) => {
               </IconButton>
               <IconButton
                 className="!bg-white"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleMoreClick(e, post.id);
-                }}
+                onClick={(e) => handleMoreClick(e, post.id)}
+                disabled={isPending}
               >
-                <MoreHoriz className="text-black" fontSize="small" />
+                {isPending && activeMenuId === post.id ? (
+                  <CircularProgress size={20} />
+                ) : (
+                  <MoreHoriz className="text-black" fontSize="small" />
+                )}
               </IconButton>
 
-              {activeMenuId === post.id && (
+              {activeMenuId === post.id && !isPending && (
                 <div
                   className="absolute bottom-10 right-0 w-48 font-bold bg-white rounded-md shadow-lg text-sm z-30 border border-gray-200"
                   onClick={(e) => e.stopPropagation()}
@@ -94,6 +116,28 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({ posts }) => {
                   >
                     Download image
                   </button>
+                  {isOwnProfile && (
+                    <>
+                      <button
+                        className="block w-full text-left px-4 py-2 cursor-pointer text-gray-950 hover:bg-gray-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePostAction(post.id, 'edit');
+                        }}
+                      >
+                        Edit post
+                      </button>
+                      <button
+                        className="block w-full text-left px-4 py-2 cursor-pointer text-gray-950 hover:bg-gray-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePostAction(post.id, 'delete');
+                        }}
+                      >
+                        Delete post
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>

@@ -1,4 +1,4 @@
-  import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useAuthStore } from '../../stores/AuthStore';
 
@@ -15,7 +15,7 @@ const LogoutForm = () => {
   };
 
   return (
-    <button onClick={handleLogout} className="w-full text-left px-4 py-2">
+    <button onClick={handleLogout} className="w-full text-left py-2">
       Sign out
     </button>
   );

@@ -1,30 +1,23 @@
-import { useEffect, useState } from 'react';
-import {
-  TextField,
-  Button,
-  CircularProgress,
-  Snackbar,
-  Alert,
-} from '@mui/material';
+import { useEffect, useState, useTransition } from 'react';
+import { TextField, Button, CircularProgress } from '@mui/material';
 import { updateUserProfile } from '../../../api/userApi';
-import { toast } from 'react-hot-toast';
-import { fetchUserProfileApi } from '../../../api/authApi';
+import { fetchUserProfile } from '../../../api/authApi';
+import useSnackBar from '../../../context/SnackBarContext';
 
 const ProfileForm = () => {
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchProfile = async () => {
       try {
-        const data = await fetchUserProfileApi();
+        const data = await fetchUserProfile();
         setFormData((prev) => ({
           ...prev,
           user_name: data.name || '',
         }));
-        console.log(data.name);
       } catch (error) {
         console.error('error fetching user', error);
       }
     };
-    fetchUserProfile();
+    fetchProfile();
   }, []);
   const [formData, setFormData] = useState({
     user_name: '',
@@ -32,34 +25,28 @@ const ProfileForm = () => {
     last_name: '',
     bio: '',
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const showSnackBar = useSnackBar();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
 
     try {
-      await toast.promise(
-        updateUserProfile({
+      startTransition(async () => {
+        const response = await updateUserProfile({
           name: formData.user_name,
           first_name: formData.first_name,
           last_name: formData.last_name,
           bio: formData.bio,
-        }),
-        {
-          loading: 'Updating profile...',
-          success: 'Profile data updated!',
-          error: 'Failed to update profile.',
-        },
-      );
-      setSuccess(true);
+        });
+        showSnackBar(`${response}`, 'success');
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Update failed');
-    } finally {
-      setLoading(false);
+      if (err instanceof Error) {
+        showSnackBar(`${err.message}`);
+      } else {
+        showSnackBar('An unexpected error occurred');
+      }
     }
   };
 
@@ -111,27 +98,13 @@ const ProfileForm = () => {
         <Button
           type="submit"
           variant="contained"
-          color="primary"
-          disabled={loading}
-          startIcon={loading ? <CircularProgress size={20} /> : null}
+          color="error"
+          disabled={isPending}
+          startIcon={isPending ? <CircularProgress size={20} /> : null}
         >
           Save Changes
         </Button>
       </div>
-
-      <Snackbar open={!!error} onClose={() => setError('')}>
-        <Alert severity="error" onClose={() => setError('')}>
-          {error}
-        </Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={success}
-        autoHideDuration={6000}
-        onClose={() => setSuccess(false)}
-      >
-        <Alert severity="success">Profile updated successfully!</Alert>
-      </Snackbar>
     </form>
   );
 };

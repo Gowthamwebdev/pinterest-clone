@@ -1,25 +1,27 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Search, Close } from "@mui/icons-material";
-import LandingNav from "../../components/layout/LandingNav";
-import { resetPasswordApi } from "../../api/authApi";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Close } from '@mui/icons-material';
+import { forgetPassword, resetPassword } from '../../api/authApi';
+import useSnackBar from '../../context/SnackBarContext';
 
 const ResetPasswordPage: React.FC = () => {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [resetMode, setResetMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const navigate = useNavigate();
+  const showSnackBar = useSnackBar();
 
   const handleSearch = async () => {
-    if (!email.includes("@")) return;
-    setLoading(true);
+    if (!email.includes('@')) return;
+
+    const response = await forgetPassword(email);
+    showSnackBar(response, 'error');
 
     try {
-
       setResetMode(true);
     } catch (error) {
-      alert("Something went wrong.");
+      alert('Something went wrong.');
     } finally {
       setLoading(false);
     }
@@ -28,10 +30,8 @@ const ResetPasswordPage: React.FC = () => {
   const handleResetPassword = async () => {
     setResetLoading(true);
     try {
-      await resetPasswordApi(email, "NewRandomPassword123!"); 
-      alert("Password reset email sent!");
-      navigate("/login"); 
-      alert(error.message || "Failed to reset password.");
+      const response = await forgetPassword(email);
+      showSnackBar(response, 'error');
     } finally {
       setResetLoading(false);
     }
@@ -39,11 +39,11 @@ const ResetPasswordPage: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-white">
-      <LandingNav />
-
       <div className="flex flex-col items-center pt-24 px-4">
         <h1 className="text-3xl font-semibold text-black mb-4 mt-0 text-center">
-          {resetMode ? "Reset your password" : "Let's find your Pinterest account"}
+          {resetMode
+            ? 'Reset your password'
+            : "Let's find your Pinterest account"}
         </h1>
 
         <p className="text-gray-600 text-center text-sm mb-5">
@@ -63,7 +63,10 @@ const ResetPasswordPage: React.FC = () => {
                 disabled={loading}
               />
               {resetMode && (
-                <button onClick={() => setResetMode(false)} className="text-gray-500">
+                <button
+                  onClick={() => setResetMode(false)}
+                  className="text-gray-500"
+                >
                   <Close />
                 </button>
               )}
@@ -71,14 +74,14 @@ const ResetPasswordPage: React.FC = () => {
 
             <button
               className={`bg-red-600 text-white font-semibold px-6 py-3 rounded-full transition-all ${
-                !email.includes("@") || resetMode || loading
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-red-700 hover:scale-105 hover:shadow-lg cursor-pointer"
+                !email.includes('@') || resetMode || loading
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-red-700 hover:scale-105 hover:shadow-lg cursor-pointer'
               }`}
-              disabled={!email.includes("@") || resetMode || loading}
+              disabled={!email.includes('@') || resetMode || loading}
               onClick={handleSearch}
             >
-              {loading ? "Searching..." : "Search"}
+              {loading ? 'Searching...' : 'Search'}
             </button>
           </div>
         </div>
@@ -86,12 +89,12 @@ const ResetPasswordPage: React.FC = () => {
         {resetMode && (
           <button
             className={`w-full max-w-md bg-red-600 text-white font-semibold text-lg px-6 py-2 rounded-full mt-6 hover:bg-red-700 transition ${
-              resetLoading ? "opacity-50 cursor-not-allowed" : ""
+              resetLoading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             onClick={handleResetPassword}
             disabled={resetLoading}
           >
-            {resetLoading ? "Sending..." : "Send a password reset email"}
+            {resetLoading ? 'Sending...' : 'Send a password reset email'}
           </button>
         )}
       </div>
@@ -99,4 +102,3 @@ const ResetPasswordPage: React.FC = () => {
   );
 };
 export default ResetPasswordPage;
-
