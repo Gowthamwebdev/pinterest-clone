@@ -1,4 +1,4 @@
-import SettingsLayout from '../components/settings/SettingsLayout';
+import SettingsLayout from '@components/settings/SettingsLayout';
 import { Outlet } from 'react-router-dom';
 
 const Settings = () => {

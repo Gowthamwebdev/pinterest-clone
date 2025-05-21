@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Divider, Typography, Button } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import AddPostForm from '../components/form/AddPinForm';
-import { createPost } from '../api/postApi';
-import useSnackBar from '../context/SnackBarContext';
+import AddPostForm from '@components/form/AddPinForm';
+import { createPost } from '@api/postApi';
+import useSnackBar from '@context/SnackBarContext';
 
 type FormValues = {
   title: string;

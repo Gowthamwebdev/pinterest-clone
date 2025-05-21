@@ -1,11 +1,11 @@
 import { Box, Button, TextField, Typography } from '@mui/material';
 import React, { useTransition } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { userSignupApi } from '../../api/authApi';
+import { userSignup } from '@api/authApi';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signupSchema } from '../../Validations/signupSchema';
-import useSnackBar from '../../context/SnackBarContext';
+import { signupSchema } from '@validations/signupSchema';
+import useSnackBar from '@context/SnackBarContext';
 
 interface signUpFormData {
   email: string;
@@ -30,7 +30,7 @@ const SignUpForm: React.FC = () => {
     startTransition(async () => {
       try {
         console.log(data.email);
-        const response = await userSignupApi({
+        const response = await userSignup({
           email: data.email,
           password: data.password,
           dateOfBirth: data.dateOfBirth,

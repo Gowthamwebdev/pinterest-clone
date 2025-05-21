@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { postType } from '../../types/postTypes';
-import { userType } from '../../types/userTypes';
+import { postType } from '@type/postTypes';
+import { userType } from '@type/userTypes';
 
 interface PostUserProps {
   post: postType & {

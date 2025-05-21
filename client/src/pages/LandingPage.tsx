@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import Navbar from '../components/layout/LandingNav';
-import AuthModal from '../components/auth/AuthModal';
-// import LandingPageHome from '../components/landing-page/LandingPageHome';
-import LandingPageSearch from '../components/landing-page/LandingPageSearch';
+import Navbar from '@components/layout/Navbar';
+import AuthModal from '@components/auth/AuthModal';
+import LandingPageSearch from '@components/landing-page/LandingPageSearch';
 
 const LandingPage = () => {
   const [openModal, setOpenModal] = useState(false);

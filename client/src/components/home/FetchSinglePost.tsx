@@ -1,16 +1,19 @@
 import { useEffect, useState, useTransition } from 'react';
-import { useParams } from 'react-router-dom';
-import { getPostById } from '../../api/postApi';
-import { postType } from '../../types/postTypes';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getPostById } from '@api/postApi';
+import { postType } from '@type/postTypes';
 import MasonryGrid from './MasonryGrid';
 import DisplayUserInfo from '../users/DisplayUserInfo';
 import PostActions from '../ui/PostActions';
-import { userType } from '../../types/userTypes';
-import { handleDownload } from '../../utils/functions';
+import { userType } from '@type/userTypes';
+import { handleDownload, handleNavigate } from '@utils/functions';
 import SpinningLoader from '../ui/loader/SpinningLoader';
+import { IconButton } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
 
 const FetchSinglePost = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [currentPost, setCurrentPost] = useState<
     (postType & { user: userType & { id: string } }) | null
   >(null);
@@ -53,12 +56,24 @@ const FetchSinglePost = () => {
 
         {currentPost && (
           <div className="w-full md:w-[60vw] flex flex-col gap-1 p-2 relative">
-            <PostActions
-              onDownload={() =>
-                handleDownload(currentPost.id, currentPost.image_url)
-              }
-              postId={currentPost.id}
-            />
+            <div className="flex items-center justify-between">
+              <IconButton
+                onClick={() => handleNavigate(navigate, '/home')}
+                aria-label="Go back"
+                sx={{
+                  color: 'gray.600',
+                  '&:hover': { backgroundColor: 'gray.100' },
+                }}
+              >
+                <ArrowBack fontSize="medium" />
+              </IconButton>
+              <PostActions
+                onDownload={() =>
+                  handleDownload(currentPost.id, currentPost.image_url)
+                }
+                postId={currentPost.id}
+              />
+            </div>
             <DisplayUserInfo post={currentPost} />
 
             <div className="flex flex-col gap-2 mt-4">

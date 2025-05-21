@@ -3,7 +3,7 @@ import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import Notifications from '../ui/Notifications';
 import SidebarOptions from '../ui/SidebarOptions';
-import { useUiStore } from '../../stores/UiStore';
+import { useUiStore } from '@stores/UiStore';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,7 +18,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Sidebar setNotification={setNotification} setSetting={setSetting} />
       </div>
       <div className="flex flex-col flex-1">
-        <Navbar />
+        <Navbar onLoginClick={() => {}} onSignupClick={() => {}} />
         <div className="flex-1 p-4 overflow-auto">{children}</div>
       </div>
       {notification && <Notifications setNotification={setNotification} />}

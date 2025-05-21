@@ -1,8 +1,8 @@
 import { useEffect, useState, useTransition } from 'react';
-import { deleteUserTags, fetchUserTags } from '../../../api/userApi';
+import { deleteUserTags, fetchUserTags } from '@api/userApi';
 import SpinningLoader from '../../ui/loader/SpinningLoader';
 import { CancelRounded } from '@mui/icons-material';
-import useSnackBar from '../../../context/SnackBarContext';
+import useSnackBar from '@context/SnackBarContext';
 
 interface Pin {
   image_url: string;

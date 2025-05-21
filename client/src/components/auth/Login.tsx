@@ -3,10 +3,11 @@ import { Box, Button, TextField, Typography } from '@mui/material';
 import React, { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import { userLoginApi } from '../../api/authApi';
-import { useAuthStore } from '../../stores/AuthStore';
-import Cookies from 'js-cookie';
-import { loginSchema } from '../../Validations/loginSchema';
+import { userLogin } from '@api/authApi';
+import { useAuthStore } from '@stores/AuthStore';
+import { loginSchema } from '@validations/loginSchema';
+import useSnackBar from '@context/SnackBarContext';
+
 interface LoginFormData {
   email: string;
   password: string;
@@ -16,6 +17,7 @@ const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const [isPending, startTransition] = useTransition();
   const { setAuth } = useAuthStore();
+  const showSnackBar = useSnackBar();
 
   const {
     register,
@@ -30,17 +32,26 @@ const LoginForm: React.FC = () => {
   const handleLogin = async (data: LoginFormData): Promise<void> => {
     startTransition(async () => {
       try {
-        const response = await userLoginApi({
+        const response = await userLogin({
           email: data.email,
           password: data.password,
         });
+        if (!response.token) {
+          throw new Error('Invalid response from server');
+        }
         setAuth({
           isAuthenticated: true,
+          accessToken: response.token,
         });
-        Cookies.set('token', response.token, { expires: 1 });
         reset();
+        showSnackBar('Login successful', 'success');
         navigate('/home');
       } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : 'Login failed. Please try again.';
+        showSnackBar(errorMessage, 'error');
         console.error('Login error:', err);
       }
     });

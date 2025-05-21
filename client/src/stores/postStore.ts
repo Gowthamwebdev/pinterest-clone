@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { postState } from '../types/postTypes';
+import { postState } from '@type/postTypes';
 
 export const usePostStore = create<postState>((set) => ({
   post: {

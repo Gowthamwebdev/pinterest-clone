@@ -1,45 +1,45 @@
 import { lazy, Suspense } from 'react';
 import { Route, Routes, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import Layout from '../components/layout/Layout';
-import SpinningLoader from '../components/ui/loader/SpinningLoader';
+import Layout from '@components/layout/Layout';
+import SpinningLoader from '@components/ui/loader/SpinningLoader';
+import ResetPasswordPage from '@pages/auth/ResetPasswordPage';
+import ForgetPasswordPage from '@pages/auth/ForgetPasswordPage';
 
-const LandingPage = lazy(() => import('../pages/LandingPage'));
-const ResetPasswordForm = lazy(() => import('../components/form/ResetPasswordForm'));
-const Home = lazy(() => import('../pages/Home'));
-const DisplayPosts = lazy(() => import('../components/home/DisplayPosts'));
-const FetchSinglePost = lazy(() => import('../components/home/FetchSinglePost'));
-const Explore = lazy(() => import('../pages/Explore'));
-const CreatePost = lazy(() => import('../pages/CreatePost'));
-const UserProfile = lazy(() => import('../pages/UserProfile'));
-const SearchResults = lazy(() => import('../components/SearchResults'));
-const Settings = lazy(() => import('../pages/Settings'));
-const EditProfile = lazy(() => import('../components/settings/profile/EditProfile'));
-const HomeFeedTuner = lazy(() => import('../pages/HomeFeedTuner'));
+const LandingPage = lazy(() => import('@pages/LandingPage'));
+const Home = lazy(() => import('@pages/Home'));
+const DisplayPosts = lazy(() => import('@components/home/DisplayPosts'));
+const FetchSinglePost = lazy(() => import('@components/home/FetchSinglePost'));
+const Explore = lazy(() => import('@pages/Explore'));
+const CreatePost = lazy(() => import('@pages/CreatePost'));
+const UserProfile = lazy(() => import('@pages/UserProfile'));
+const SearchResults = lazy(() => import('@components/SearchResults'));
+const Settings = lazy(() => import('@pages/Settings'));
+const EditProfile = lazy(
+  () => import('@components/settings/profile/EditProfile'),
+);
+const HomeFeedTuner = lazy(() => import('@pages/HomeFeedTuner'));
+const NotFoundPage = lazy(() => import('@components/not-found/NotFoundPage'));
 
 const AppRoutes = () => {
-  const token = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const ProtectedRoute = () => {
-    if (token) {
-      return (
+    return isAuthenticated ? (
       <Layout>
         <Suspense fallback={<SpinningLoader />}>
           <Outlet />
         </Suspense>
       </Layout>
+    ) : (
+      <Navigate to="/" replace state={{ from: window.location.pathname }} />
     );
-    }
-      return (
-        <Navigate to="/" replace state={{ from: window.location.pathname }} />
-      );
   };
 
   const PublicRoute = () => {
-    if (token) {
-      return <Navigate to="/home" replace />;
-    }
-    return (
+    return isAuthenticated ? (
+      <Navigate to="/home" replace />
+    ) : (
       <Suspense fallback={<SpinningLoader />}>
         <Outlet />
       </Suspense>
@@ -50,7 +50,8 @@ const AppRoutes = () => {
     <Routes>
       <Route element={<PublicRoute />}>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/password/reset" element={<ResetPasswordForm />} />
+        <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/password/forgot" element={<ForgetPasswordPage />} />
       </Route>
 
       <Route element={<ProtectedRoute />}>
@@ -59,7 +60,6 @@ const AppRoutes = () => {
         </Route>
 
         <Route path="post/:id" element={<FetchSinglePost />} />
-
         <Route path="/today" element={<Explore />} />
         <Route path="/pin-creation-tool" element={<CreatePost />} />
         <Route path="/search" element={<SearchResults />} />
@@ -74,7 +74,7 @@ const AppRoutes = () => {
         </Route>
 
         <Route path="/messages" element={<Home />} />
-        <Route path="*" element={<Navigate to="/home" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );

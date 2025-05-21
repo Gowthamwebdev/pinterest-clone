@@ -1,13 +1,13 @@
 import { useEffect, useState, useTransition } from 'react';
 import Masonry from '@mui/lab/Masonry';
-import { postType } from '../../types/postTypes';
+import { postType } from '@type/postTypes';
 import { IconButton, CircularProgress } from '@mui/material';
 import { MoreHoriz } from '@mui/icons-material';
 import { FiShare } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import { handleDownload, handleNavigate } from '../../utils/functions';
-import { deletePostById } from '../../api/postApi';
-import useSnackBar from '../../context/SnackBarContext';
+import { handleDownload, handleNavigate } from '@utils/functions';
+import { deletePostById } from '@api/postApi';
+import useSnackBar from '@context/SnackBarContext';
 
 interface MasonryGridProps {
   posts: postType[];

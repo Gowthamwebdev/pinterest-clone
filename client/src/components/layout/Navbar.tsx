@@ -9,22 +9,33 @@ import {
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiChevronDown } from 'react-icons/fi';
-import { useAuthStore } from '../../stores/AuthStore';
-import LogoutForm from '../form/LogoutFom';
-import { useUiStore } from '../../stores/UiStore';
+import { useAuthStore } from '@stores/AuthStore';
+import { useUiStore } from '@stores/UiStore';
+import pinterestSvg from '@assets/pinterest.svg';
+import { Search, Close } from '@mui/icons-material';
+import LogoutForm from '@components/form/LogoutFom';
 
-const Navbar: React.FC = () => {
+type Props = {
+  onLoginClick: () => void;
+  onSignupClick: () => void;
+};
+
+const Navbar: React.FC<Props> = ({ onLoginClick, onSignupClick }) => {
   const navigate = useNavigate();
   const { auth } = useAuthStore();
   const { setOpenModal } = useUiStore();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
   const [searchQuery, setSearchQuery] = React.useState('');
+  const open = Boolean(anchorEl);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
       navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
     }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
   };
 
   const handleAvatarClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -41,36 +52,64 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <div className="w-full flex items-center justify-between px-6 py-3 bg-white sticky top-0 z-10">
-      <div className="flex items-center bg-gray-100 px-2 py-0.5 rounded-lg flex-grow mr-3">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          style={{ width: 20, height: 20, color: '#757575' }}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18.5a7.5 7.5 0 006.15-1.85z"
-          />
-        </svg>
-        <TextField
-          placeholder="Search"
-          variant="standard"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={handleSearch}
-          InputProps={{
-            disableUnderline: true,
-            sx: { ml: 1, fontSize: 14, paddingY: 1 },
-          }}
-          sx={{ flex: 1 }}
+    <div className="w-full flex items-center justify-between px-6 py-3 bg-white shadow sticky top-0 z-10">
+      <div className="flex items-center">
+        <img
+          src={pinterestSvg}
+          alt="Pinterest Logo"
+          className="w-6 mx-auto mb-2 mr-2"
         />
+        <span
+          style={{
+            fontSize: '20px',
+            fontWeight: 'bold',
+            color: '#e60023',
+            marginRight: '20px',
+          }}
+        >
+          Pinterest
+        </span>
+        {!auth.isAuthenticated && (
+          <Button
+            variant="text"
+            sx={{
+              color: 'black',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              marginRight: '20px',
+            }}
+          >
+            Explore
+          </Button>
+        )}
+        <div className="flex items-center bg-[#f5f5f5] px-4 py-2 rounded-full flex-grow mr-3">
+          <Search className="text-gray-500 mr-2" />
+          <TextField
+            fullWidth
+            placeholder="Search"
+            variant="standard"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearch}
+            slotProps={{ input: { disableUnderline: true } }}
+            sx={{
+              fontSize: 14,
+              paddingLeft: '10px',
+              width: '100%',
+            }}
+          />
+          {searchQuery.length > 0 && (
+            <IconButton
+              onClick={handleClearSearch}
+              size="small"
+              sx={{ color: 'gray.500' }}
+              aria-label="Clear search"
+            >
+              <Close fontSize="small" />
+            </IconButton>
+          )}
+        </div>
       </div>
-
       <div className="flex items-center gap-4">
         {auth.isAuthenticated ? (
           <>
@@ -103,29 +142,41 @@ const Navbar: React.FC = () => {
         ) : (
           <>
             <Button
-              variant="text"
+              onClick={() => {
+                onSignupClick();
+                setOpenModal(false);
+              }}
               sx={{
+                backgroundColor: '#e6e6e6',
+                '&:hover': { backgroundColor: '#d9d9d9' },
+                boxShadow: 'none',
                 color: 'black',
+                borderRadius: '30px',
                 fontWeight: 'bold',
                 textTransform: 'none',
+                padding: '8px 15px',
+                fontSize: '15px',
+                fontFamily: 'Neue Haas Grotesk, Arial, Helvetica, sans-serif',
               }}
-              onClick={() => setOpenModal(false)}
             >
-              Signup
+              Sign up
             </Button>
             <Button
-              variant="outlined"
-              onClick={() => setOpenModal(true)}
+              onClick={() => {
+                onLoginClick();
+                setOpenModal(true);
+              }}
               sx={{
                 backgroundColor: '#e60023',
                 '&:hover': { backgroundColor: '#ad081b' },
                 boxShadow: 'none',
-                borderRadius: 200,
                 color: 'white',
-                py: 1,
-                border: 'none',
+                borderRadius: '30px',
                 fontWeight: 'bold',
                 textTransform: 'none',
+                padding: '8px 15px',
+                fontSize: '15px',
+                fontFamily: 'Neue Haas Grotesk, Arial, Helvetica, sans-serif',
               }}
             >
               Login

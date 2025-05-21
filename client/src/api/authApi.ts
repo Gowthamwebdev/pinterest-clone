@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios';
-import { loginType, signupType } from '../types/userTypes';
+import { loginType, signupType } from '@type/userTypes';
 import apiClient from './apiClient';
 
 const handleApiError = (error: unknown): Error => {
@@ -18,7 +18,7 @@ const handleApiError = (error: unknown): Error => {
   return new Error('An unknown error occurred');
 };
 
-export const userLoginApi = async ({ email, password }: loginType) => {
+export const userLogin = async ({ email, password }: loginType) => {
   try {
     const response = await apiClient.post('/auth/login', { email, password });
 
@@ -40,7 +40,7 @@ export const fetchUserProfile = async () => {
   }
 };
 
-export const userSignupApi = async (userData: signupType) => {
+export const userSignup = async (userData: signupType) => {
   try {
     const response = await apiClient.post('/auth/signup', userData);
 

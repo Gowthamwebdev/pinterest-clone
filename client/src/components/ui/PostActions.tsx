@@ -1,8 +1,8 @@
 import React, { useState, useContext, useTransition, useEffect } from 'react';
 import { FiHeart, FiShare } from 'react-icons/fi';
 import { MoreHoriz } from '@mui/icons-material';
-import { checkIfPostIsSaved, toggleSavePost } from '../../api/postApi';
-import { SnackBarContext } from '../../context/SnackBarContext';
+import { checkIfPostIsSaved, toggleSavePost } from '@api/postApi';
+import { SnackBarContext } from '@context/SnackBarContext';
 import { Menu, MenuItem } from '@mui/material';
 
 interface PostActionsProps {

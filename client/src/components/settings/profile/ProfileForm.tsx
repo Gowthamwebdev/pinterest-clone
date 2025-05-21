@@ -1,8 +1,8 @@
 import { useEffect, useState, useTransition } from 'react';
 import { TextField, Button, CircularProgress } from '@mui/material';
-import { updateUserProfile } from '../../../api/userApi';
-import { fetchUserProfile } from '../../../api/authApi';
-import useSnackBar from '../../../context/SnackBarContext';
+import { updateUserProfile } from '@api/userApi';
+import { fetchUserProfile } from '@api/authApi';
+import useSnackBar from '@context/SnackBarContext';
 
 const ProfileForm = () => {
   useEffect(() => {

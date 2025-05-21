@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import DisplayUserProfile from '../components/users/DisplayUserProfile';
-import { fetchOtherUserProfile } from '../api/userApi';
-import { fetchUserProfile } from '../api/authApi';
-import { useUserStore } from '../stores/userStore/userStore';
+import DisplayUserProfile from '@components/users/DisplayUserProfile';
+import { fetchOtherUserProfile } from '@api/userApi';
+import { fetchUserProfile } from '@api/authApi';
+import { useUserStore } from '@stores/userStore/userStore';
 
 const UserProfile = () => {
   const { id } = useParams();

@@ -1,23 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DisplayUserPosts from './DisplayUserPosts';
-import { handleNavigate } from '../../utils/functions';
-import { useUserStore } from '../../stores/userStore/userStore';
+import { handleNavigate } from '@utils/functions';
+import { useUserStore } from '@stores/userStore/userStore';
 
 interface UserProps {
-  // userData: {
-  //   id: string;
-  //   name: string;
-  //   email: string;
-  //   profile_img: string;
-  // };
   isOwnProfile: boolean;
 }
 
-const DisplayUserProfile: React.FC<UserProps> = ({
-  // userData,
-  isOwnProfile,
-}) => {
+const DisplayUserProfile: React.FC<UserProps> = ({ isOwnProfile }) => {
   const [activeTab, setActiveTab] = useState<'created' | 'saved'>('created');
   const navigate = useNavigate();
   const { user } = useUserStore();

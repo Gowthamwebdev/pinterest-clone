@@ -43,6 +43,7 @@ export class AuthService {
       return {
         message: 'user logged in successfully',
         token: this.jwtService.sign(payload),
+        statusCode: HttpStatus.CREATED,
       };
     } catch (error) {
       throw new HttpException(

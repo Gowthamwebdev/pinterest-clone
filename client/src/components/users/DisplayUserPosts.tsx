@@ -1,6 +1,6 @@
 import { useEffect, useState, useTransition } from 'react';
-import { postType } from '../../types/postTypes';
-import { fetchUserCreatedOrSavedPosts } from '../../api/userApi';
+import { postType } from '@type/postTypes';
+import { fetchUserCreatedOrSavedPosts } from '@api/userApi';
 import MasonryGrid from '../home/MasonryGrid';
 import { CircularProgress } from '@mui/material';
 

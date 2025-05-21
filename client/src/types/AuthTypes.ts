@@ -1,6 +1,6 @@
 export type authType = {
   isAuthenticated: boolean;
-  accessToken: string;
+  accessToken?: string;
 };
 
 export type authState = {

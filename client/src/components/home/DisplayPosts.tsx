@@ -1,6 +1,6 @@
 import { useEffect, useState, useTransition } from 'react';
-import { getPosts } from '../../api/postApi';
-import { postType } from '../../types/postTypes';
+import { getPosts } from '@api/postApi';
+import { postType } from '@type/postTypes';
 import MasonryGrid from './MasonryGrid';
 import { MasonryLoader } from '../ui/loader/CardLoader';
 

@@ -1,4 +1,4 @@
-import { postType } from '../types/postTypes';
+import { postType } from '@type/postTypes';
 import apiClient from './apiClient';
 
 export const createPost = async (formData: FormData) => {
